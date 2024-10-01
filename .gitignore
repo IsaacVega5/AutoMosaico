@@ -1,0 +1,7 @@
+__pycache__/
+AutoMosaico.build/
+AutoMosaico.dist/
+env/
+build/
+json/*
+error_logs.md
