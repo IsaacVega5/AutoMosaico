@@ -1,16 +1,19 @@
 import customtkinter as ctk
 import tkinter as tk
+from tkinter.filedialog import asksaveasfilename
 from CTkTable import CTkTable
 from PIL import  Image, ImageTk
 import numpy as np
 from read_roi import read_roi_zip
+import os
+
+from components.previewTools import previewTools
 
 from classes.mosaico import Mosaico
 from classes.roi import ROI
 
 from utils import get_resize_size, resize_ratio, order_roi_zip
 from services.process import values_from_rgb_img, gen_masked_img, values_from_tif_img, get_max_hue
-
 
 w_height, w_width = 1000, 1000
 
@@ -32,16 +35,10 @@ class previewRoi(ctk.CTkToplevel):
     self.img = Mosaico(img_path, type)
     
     self.soil_mask = None
+    to_draw = self.img.img
     if soil_points is not None and soil_points[0] is not None and soil_points[1] is not None:
-      self.soil_mask = self.img.get_soilless_img(soil_points)
-      image_array = np.array(self.img.img)
-      masked_img = np.zeros(image_array.shape, dtype=np.uint8) #self.img.img.copy()
-      masked_img[:, :, 0] = image_array[:, :, 0] * self.soil_mask[:, :, 0]
-      masked_img[:, :, 1] = image_array[:, :, 1] * self.soil_mask[:, :, 0]
-      masked_img[:, :, 2] = image_array[:, :, 2] * self.soil_mask[:, :, 0]
-      self.img.img = Image.fromarray(masked_img)
-    
-    
+      to_draw, self.soil_mask= self.img.get_soilless_img(soil_points)
+       
     #Calculamos el ratio antes de ajustar dimensiones
     if self.origin:
       self.ratio = 1
@@ -49,19 +46,21 @@ class previewRoi(ctk.CTkToplevel):
       self.ratio = self.img.resize_ratio(self.img_origin_roi)
     
     # ajustar dimensiones
-    img_height, img_width = get_resize_size(self.img, w_height)
+    self.img_height, self.img_width = get_resize_size(self.img, w_height)
     
-    self.img_tk = ImageTk.PhotoImage(self.img.img.resize((img_width, img_height)))
-    
-    self.canvas = ctk.CTkCanvas(self, width=img_width, height=img_height)
+    to_draw = to_draw.resize((self.img_width, self.img_height))
+    self.img_tk = ImageTk.PhotoImage(to_draw)
+    self.canvas = ctk.CTkCanvas(self, width=self.img_width, height=self.img_height)
     self.canvas.create_image(0, 0, anchor=tk.NW, image=self.img_tk)
     self.canvas.configure(highlightthickness=0)
     self.canvas.pack()
     
     self.update()
-    self.check_show_roi = ctk.BooleanVar(value=True)
-    self.toggle_roi_btn = ctk.CTkCheckBox(master=self, text="Show ROIs", variable=self.check_show_roi, onvalue=True, offvalue=False, command=self.draw_roi, height=5, bg_color="#000", font=("Consolas", 12), checkbox_height=16, checkbox_width=16, corner_radius= 0)
-
+    self.check_show_roi = ctk.BooleanVar(value=True)  
+    
+    self.tools = previewTools(self, on_toggle_roi=self.draw_roi, on_toggle_remove_soil=self.update_img, on_save=self.save_img)
+    self.tools.pack(fill=tk.X)
+    
     if self.type == 'RGB':
       self.roi_color = {'normal':'yellow', 'active':'red'}
       values = [['Parc.','Name', 'Intensity', 'Hue', 'Saturation', 'Lightness', '*a', '*b', '*u', '*v', 'GA%', 'GGA%', 'CSI'],
@@ -76,21 +75,20 @@ class previewRoi(ctk.CTkToplevel):
     self.table.pack(expand=True, fill="both")
     
     old_width, _ = self.img_origin_roi.size
-    self.ratio = img_width / old_width
+    self.ratio = self.img_width / old_width
     
     # Agregar botones en canvas
     self.roi = read_roi_zip(self.roi_path)
     self.roi = order_roi_zip(self.roi)
-    self.draw_roi()
-    
-    self.geometry(f"{img_width}x{img_height + 50}")
+    # self.draw_image()
+    self.draw_roi(self.tools.get_roi())
+    self.geometry(f"{self.img_width}x{self.img_height + 50 + 25}")
     self.resizable(False, False)
   
-  def draw_roi(self):
+  def draw_roi(self, value = None):
     self.canvas.delete('all')
-    self.canvas.create_image(0, 0, anchor=tk.NW, image=self.img_tk)
-    self.canvas.create_window(5, self.canvas.winfo_height() - 20, anchor=tk.NW, window=self.toggle_roi_btn)
-    if not self.check_show_roi.get():
+    self.canvas.create_image(0, 0, anchor="nw", image=self.img_tk)
+    if not value:
       return
     for roi in self.roi.values():
       current_roi = ROI(roi)
@@ -151,4 +149,25 @@ class previewRoi(ctk.CTkToplevel):
       area, mean, max, min = values_from_tif_img(img, mask)
       self.table.delete_row(1)
       self.table.add_row([row, roi.get_name(), area, mean, min, max])
-    
+  
+  def update_img(self):
+    if self.tools.get_remove_soil(): 
+      img = self.img.soilless_img
+    else:
+      img = self.img.img
+    img = img.resize((self.img_width, self.img_height))
+    self.img_tk = ImageTk.PhotoImage(img)
+    self.draw_roi( self.tools.get_roi() )
+  
+  def save_img(self):
+    img_path = self.img.path
+    save_path = asksaveasfilename(
+      initialdir = os.path.dirname(img_path),
+      title = "Select file",
+      filetypes = (("jpg files","*.jpg"),("all files","*.*"))
+    )
+    if self.tools.get_remove_soil(): 
+      img = self.img.soilless_img
+    else:
+      img = self.img.img
+    img.save(save_path)
