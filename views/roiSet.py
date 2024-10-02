@@ -105,11 +105,11 @@ class roiSet(ctk.CTkFrame):
                          text="Seleccione el tipo de las imágenes que desea cargar",
                          alternatives=IMG_TYPES)
     if type.get() is None: return
-    
+    type = type.get()['alternatives']
     for file in file_path:
       img = {
         "path" : file,
-        "type" : type.get(),
+        "type" : type,
       }
       self.img_list.insert(0, img)
     
@@ -120,12 +120,22 @@ class roiSet(ctk.CTkFrame):
     export_form = SelectionPop(master,
                        "Generar xslx",
                        "¿De que forma desea exportar los datos?", 
-                       EXPORT_TYPES)
+                       EXPORT_TYPES,
+                       checkVars={
+                         "¿Incluir imagen original?" : False,
+                         "¿Remover el suelo?" : False
+                       })
     
-    if export_form.get() is None: return
+    
+    res = export_form.get()
+    if res is None: return
+
+    type = res['alternatives']
+    origin = res['checks'][0]
+    soil = res['checks'][1]
     
     value_export = None
-    if export_form.get() == EXPORT_TYPES[1]:
+    if type == EXPORT_TYPES[1]:
       value_export = SelectionPop(master,
                                   title="Generar xslx",
                                   subtitle="Seleccione el valor que desea exportar\npor cada tipo de imagen",
@@ -138,8 +148,8 @@ class roiSet(ctk.CTkFrame):
                                   ])
 
       if value_export.get() is None: return
-      value_export = value_export.get()
-                           
+      value_export = value_export.get()['alternatives']
+    
     self.master.master.progressBar.start()
     threading.Thread(target=self.generate, args=(export_form.get(),value_export)).start()
       
