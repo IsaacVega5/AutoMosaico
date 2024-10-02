@@ -138,7 +138,10 @@ class previewRoi(ctk.CTkToplevel):
     
     if self.type == 'RGB':
       figure = roi.get_figure(ratio)
-      values = [round(value, 4) if isinstance(value, float) else value for value in values_from_rgb_img(img, figure, self.soil_mask if self.soil_mask is not None else None)]
+      mask = None
+      if self.soil_mask is not None and self.tools.get_remove_soil():
+        mask = self.soil_mask
+      values = [round(value, 4) if isinstance(value, float) else value for value in values_from_rgb_img(img, figure, mask)]
       self.table.delete_row(1)
       self.table.add_row([row, roi.get_name(), *values])
     
