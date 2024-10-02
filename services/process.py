@@ -197,7 +197,8 @@ def values_from_rgb_img(img, figure, soil_mask = None):
               countGGA += 1
       
       count += 1
-  
+  if count == 0:
+    return 'Nan', 'Nan', 'Nan', 'Nan', 'Nan', 'Nan', 'Nan', 'Nan', 'Nan', 'Nan', 'Nan'
   mean_rgb = (R/count, G/count, B/count)
   mean_hsi = RGB_to_HSI(mean_rgb)
   mean_rgb_255 = sRGBColor(mean_rgb[0], mean_rgb[1], mean_rgb[2], is_upscaled=False)
