@@ -20,6 +20,7 @@ class Mosaico():
       self.img = self.rgn()
     else:
       self.img = self.rgb()
+    self.soilless_img = None
     
   def __str__(self):
     return self.path, self.type
@@ -89,6 +90,10 @@ class Mosaico():
   
   def get_soilless_img(self, soil_points):
     mask = generate_mask_from_tile(self.path, soil_points)
-    
-    
-    return mask
+    image_array = np.array(self.img)
+    masked_img = np.zeros(image_array.shape, dtype=np.uint8)
+    masked_img[:, :, 0] = image_array[:, :, 0] * mask[:, :, 0]
+    masked_img[:, :, 1] = image_array[:, :, 1] * mask[:, :, 0]
+    masked_img[:, :, 2] = image_array[:, :, 2] * mask[:, :, 0]
+    self.soilless_img = Image.fromarray(masked_img)
+    return self.soilless_img, mask
