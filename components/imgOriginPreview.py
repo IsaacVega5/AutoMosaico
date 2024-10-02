@@ -5,7 +5,7 @@ import numpy as np
 
 from classes.mosaico import Mosaico
 from constants import IMG_TYPES
-from utils import get_resize_size
+import utils as ut
 
 from views.previewRoi import previewRoi
 
@@ -18,9 +18,10 @@ class ImgOriginPreview(ctk.CTkFrame):
     self.type = IMG_TYPES[0]
     ratio = 1
     self.frame_width = 333
+    self.frame_height = 180
     self.src = src
     self.img = Mosaico(src, self.type)
-    img_height, img_width = get_resize_size(self.img, self.frame_width)
+    img_height, img_width, _ = ut.get_new_size((self.img.img.size[1], self.img.img.size[0]), (self.frame_width, self.frame_height))
     self.image = ctk.CTkImage(light_image=self.img.img, dark_image=self.img.img, size=(img_width, img_height))
     self.label = ctk.CTkLabel(self, text="", image=self.image)
     
@@ -42,7 +43,7 @@ class ImgOriginPreview(ctk.CTkFrame):
   def change_type(self, value):
     self.type = value
     self.img = Mosaico(self.src, self.type)
-    img_height, img_width = get_resize_size(self.img, self.frame_width)
+    img_height, img_width, _ = ut.get_new_size((self.img.img.size[1], self.img.img.size[0]), (self.frame_width, self.frame_height))
     self.image = ctk.CTkImage(light_image=self.img.img, dark_image=self.img.img, size=(img_width, img_height))
     self.label.configure(image=self.image)
     self.master.master.type = value

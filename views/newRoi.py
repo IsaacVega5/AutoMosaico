@@ -100,6 +100,7 @@ class NewRoi(ctk.CTkFrame):
     self.img_entry.insert(0, file_path)
     self.img_entry.configure(state='disabled')
     
+    if hasattr(self, 'img_preview'): self.img_preview.destroy()
     self.img_preview = ImgOriginPreview(master=self.frame, src=(file_path))
     
     self.img_roi_path = file_path
