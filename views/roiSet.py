@@ -104,7 +104,7 @@ class roiSet(ctk.CTkFrame):
                          title="Tipo de imagen",
                          text="Seleccione el tipo de las imágenes que desea cargar",
                          alternatives=IMG_TYPES)
-    if type.get() is None: return
+    if type.get() is False: return
     type = type.get()['alternatives']
     for file in file_path:
       img = {
@@ -128,7 +128,7 @@ class roiSet(ctk.CTkFrame):
     
     
     res = export_form.get()
-    if res is None: return
+    if res is False: return
 
     type = res['alternatives']
     origin = res['checks'][0]
@@ -147,7 +147,7 @@ class roiSet(ctk.CTkFrame):
                                     ONE_CHANNEL_VALUES,
                                   ])
 
-      if value_export.get() is None: return
+      if value_export.get() is False: return
       value_export = value_export.get()['alternatives']
     
     self.master.master.progressBar.start()
