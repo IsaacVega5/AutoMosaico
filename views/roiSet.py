@@ -19,7 +19,7 @@ from services.process import process
 from services.excel import *
 from services.logs import save_error
 from utils import get_name_from_path
-from constants import IMG_TYPES, EXPORT_TYPES, RGB_VALUES, ONE_CHANNEL_VALUES
+from constants import IMG_TYPES, EXPORT_TYPES, RGB_VALUES, ONE_CHANNEL_VALUES, HUE_MASK_TYPE
 
 class roiSet(ctk.CTkFrame):
   def __init__(self, id, *args, **kwargs):
@@ -79,14 +79,21 @@ class roiSet(ctk.CTkFrame):
     return self.img
   
   def get_soil_area(self):
-    selectSoil = SelectSoil(master=self, img_path=self.img, select_soil=self.select_soil)
-    selectSoil.after(250, selectSoil.lift)
+    type_soil = SelectionPop(master=self, title="Tipo de mascara", text="Seleccione el tipo de mascara que desea usar",
+                             alternatives=HUE_MASK_TYPE)
     
-    self.wait_window(selectSoil)
-    points = selectSoil.points
-    if points is None: return
-    self.select_soil = points
-    self.points_txt.configure(text=(f"{str(points[0])} {str(points[1])}" if self.select_soil != [None, None] else "No se ha seleccionado un area de suelo"))
+    if type_soil.get() is False: return
+    if type_soil.get()['alternatives'] == HUE_MASK_TYPE[0]:  
+      selectSoil = SelectSoil(master=self, img_path=self.img, select_soil=self.select_soil)
+      selectSoil.after(250, selectSoil.lift)
+      
+      self.wait_window(selectSoil)
+      points = selectSoil.points
+      if points is None: return
+      self.select_soil = points
+      self.points_txt.configure(text=(f"{str(points[0])} {str(points[1])}" if self.select_soil != [None, None] else "No se ha seleccionado un area de suelo"))
+    else:
+      pass
     
   def clear_img(self):
     alert = warning(title="Eliminar imágenes", message="¿Seguro/a que desea eliminar todas las imágenes?", option_1="Eliminar", option_2="Cancelar")
