@@ -4,8 +4,7 @@ import numpy as np
 from customtkinter import CTkImage
 from read_roi import read_roi_zip
 from classes.roi import ROI
-import math 
-from services.process import generate_mask_from_tile
+import math
 
 class Mosaico():
   def __init__(self, path, type = 'RGB'):
@@ -89,7 +88,7 @@ class Mosaico():
     return new_size[0] / original_size[0]
   
   def get_soilless_img(self, soil_points):
-    mask = generate_mask_from_tile(self.path, soil_points)
+    mask = self.generate_mask_from_tile(soil_points)
     image_array = np.array(self.img)
     masked_img = np.zeros(image_array.shape, dtype=np.uint8)
     masked_img[:, :, 0] = image_array[:, :, 0] * mask[:, :, 0]
@@ -97,3 +96,29 @@ class Mosaico():
     masked_img[:, :, 2] = image_array[:, :, 2] * mask[:, :, 0]
     self.soilless_img = Image.fromarray(masked_img)
     return self.soilless_img, mask
+  
+  def generate_mask_from_tile(self, points):
+    img_path = self.path
+    
+    x1, y1 = min(points[0][0], points[1][0]), min(points[0][1], points[1][1])
+    x2, y2 = max(points[0][0], points[1][0]), max(points[0][1], points[1][1])
+    
+    aerial_image = cv2.imread(img_path)
+    img_matrix = np.array(aerial_image)
+    soil_image = img_matrix[y1:y2, x1:x2]
+
+    soil_image_tiled = np.tile(soil_image, (aerial_image.shape[0] // soil_image.shape[0] + 1, aerial_image.shape[1] // soil_image.shape[1] + 1, 1))
+    soil_image_tiled = soil_image_tiled[:aerial_image.shape[0], :aerial_image.shape[1], :]
+
+    hsv_aereal = cv2.cvtColor(aerial_image, cv2.COLOR_RGB2HSV)
+
+    hsv_tiled = cv2.cvtColor(soil_image_tiled, cv2.COLOR_RGB2HSV)
+    hsv_tiled = cv2.GaussianBlur(hsv_tiled, (5, 5), 0)
+    
+    diff = cv2.absdiff(hsv_aereal, hsv_tiled)
+
+    umbral = 1 if np.mean(diff) < 20 else 10
+
+    mask = np.where(diff < umbral, 0, 1).astype(np.uint8)
+    
+    return mask

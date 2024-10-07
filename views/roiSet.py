@@ -123,7 +123,7 @@ class roiSet(ctk.CTkFrame):
                        EXPORT_TYPES,
                        checkVars={
                          "Incluir imagen original" : False,
-                         "¿Remover el suelo?" : False
+                         "Remover el suelo" : False
                        })
     
     
@@ -151,10 +151,10 @@ class roiSet(ctk.CTkFrame):
       value_export = value_export.get()['alternatives']
     
     self.master.master.progressBar.start()
-    threading.Thread(target=self.generate, args=(export_form.get()['alternatives'],value_export, origin)).start()
+    threading.Thread(target=self.generate, args=(export_form.get()['alternatives'],value_export, origin, soil)).start()
       
     
-  def generate(self, export_form, value_export, origin):
+  def generate(self, export_form, value_export, origin, soil):
     workbook, destiny_path = create_workbook()
     if destiny_path is None: return
     progress_bar = self.master.master.progressBar
@@ -164,8 +164,8 @@ class roiSet(ctk.CTkFrame):
         "path" : self.img,
         "type" : self.type,
       })
-    from pprint import pprint
-    values = process(roi_path=self.roi, img_roi_path=self.img, img_list = img_list, progress_bar = progress_bar)
+    
+    values = process(roi_path=self.roi, img_roi_path=self.img, img_list = img_list, progress_bar = progress_bar, soil = self.select_soil if soil else None)
     to_export = {
       'RGB' : [],
       'Termal' : [],
@@ -173,7 +173,6 @@ class roiSet(ctk.CTkFrame):
       'RGN' : [],
     }
     for i,value in enumerate(values):
-      pprint(value.keys())
       if value['values'] is False: 
         save_error(self.img_list, self.roi, self.img)
         msg = error(title='Error', message='Error al generar el xlsx\n\nVerifique que los tipos coincidan con las imágenes y vuelva a intentarlo.\nSi el problema persiste contacte con el administrador.', option_1 = "Cancelar", option_2 = "Continuar")
