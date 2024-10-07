@@ -47,6 +47,7 @@ class SelectionPop(ctk.CTkFrame):
     self.text = text
     self.alternatives = alternatives
     self.response = alternatives[0]
+    self.continue_action = True
     
     self.title_frame = ctk.CTkFrame(self, fg_color="#23272e", corner_radius=0, height=10)
     self.title_frame.pack(side="top", fill ="x", padx=0, pady=0)
@@ -126,6 +127,7 @@ class SelectionPop(ctk.CTkFrame):
     dict
       A dictionary with the response from the popup window.
     """
+    if not self.continue_action: return False
     res = self.response
     res = {
       "alternatives": self.response
@@ -150,7 +152,7 @@ class SelectionPop(ctk.CTkFrame):
     self.destroy()
   
   def cancel(self):
-    self.response = None
+    self.continue_action = False
     self.place_forget()
     self.destroy()
 
