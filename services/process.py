@@ -7,6 +7,7 @@ from colormath.color_conversions import convert_color
 import multiprocessing
 from concurrent.futures import ThreadPoolExecutor
 
+from classes.mosaico import Mosaico
 from classes.roi import ROI
 from services.excel import *
 from constants import *
@@ -89,13 +90,13 @@ def generate_excel( roi_path, img_roi_path, img_list):
   
   return destiny_path
 
-def process(roi_path, img_roi_path, img_list, progress_bar = None):
+def process(roi_path, img_roi_path, img_list, progress_bar = None, soil = None):
   roi_zip = read_roi_zip(roi_path)
   roi_zip = order_roi_zip(roi_zip)
   
   results_queue = multiprocessing.Queue()
   
-  img_args = [(index,img, img_roi_path, roi_zip, results_queue) for index, img in enumerate(img_list)]
+  img_args = [(index,img, img_roi_path, roi_zip, results_queue, soil) for index, img in enumerate(img_list)]
   
   results = []
   
@@ -128,7 +129,7 @@ def process(roi_path, img_roi_path, img_list, progress_bar = None):
   return results
 
 def process_img(img_args):
-  index, image, img_origin_path, roi_zip, results_queue = img_args
+  index, image, img_origin_path, roi_zip, results_queue, soil = img_args
   img = Image.open(image['path'])
   type = image['type']
   img_origin = Image.open(img_origin_path)
@@ -136,9 +137,12 @@ def process_img(img_args):
   ratio = resize_ratio(img_origin, img)
   
   values = []
+  mask = None
+  if type == 'RGB' and soil is not None and soil[0] is not None:
+    _, mask = Mosaico(image['path'], type).get_soilless_img(soil)
+   
   for name in roi_zip:
     roi = ROI(roi_zip[name])
-    
     try:
       if type == 'Termal' or type == 'OCN' or type == 'RGN':
           img = np.array(img)
@@ -148,7 +152,7 @@ def process_img(img_args):
           values.append([roi.get_name(), area, mean, min, max])
       else:
           figure = roi.get_figure(ratio)
-          values.append([roi.get_name(), *values_from_rgb_img(img, figure)])
+          values.append([roi.get_name(), *values_from_rgb_img(img, figure, mask)])
     except Exception as e:
       values = False
     
@@ -359,27 +363,3 @@ def RGB_to_HSI_matrix(rgb_matrix):
       hsi_matrix[y, x] = hsi
   
   return hsi_matrix
-
-def generate_mask_from_tile(img_path, points):
-  x1, y1 = min(points[0][0], points[1][0]), min(points[0][1], points[1][1])
-  x2, y2 = max(points[0][0], points[1][0]), max(points[0][1], points[1][1])
-  
-  aerial_image = cv2.imread(img_path)
-  img_matrix = np.array(aerial_image)
-  soil_image = img_matrix[y1:y2, x1:x2]
-
-  soil_image_tiled = np.tile(soil_image, (aerial_image.shape[0] // soil_image.shape[0] + 1, aerial_image.shape[1] // soil_image.shape[1] + 1, 1))
-  soil_image_tiled = soil_image_tiled[:aerial_image.shape[0], :aerial_image.shape[1], :]
-
-  hsv_aereal = cv2.cvtColor(aerial_image, cv2.COLOR_RGB2HSV)
-
-  hsv_tiled = cv2.cvtColor(soil_image_tiled, cv2.COLOR_RGB2HSV)
-  hsv_tiled = cv2.GaussianBlur(hsv_tiled, (5, 5), 0)
-  
-  diff = cv2.absdiff(hsv_aereal, hsv_tiled)
-
-  umbral = 1 if np.mean(diff) < 20 else 10
-
-  mask = np.where(diff < umbral, 0, 1).astype(np.uint8)
-  
-  return mask
