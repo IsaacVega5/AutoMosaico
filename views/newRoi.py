@@ -129,7 +129,7 @@ class NewRoi(ctk.CTkFrame):
       "roi_path": self.roi_path,
       "image_path": self.img_roi_path,
       "image_type": self.type,
-      "soil_points": json.dumps(self.selected_soil),
+      "soil_data": json.dumps(self.selected_soil),
       "updated_at": str(datetime.now().strftime("%d/%m/%Y %H:%M:%S")),
       "created_at": str(datetime.now().strftime("%d/%m/%Y %H:%M:%S")),
     }
