@@ -3,7 +3,42 @@ from PIL import Image
 from constants import IMG_TYPES
 
 class SelectionPop(ctk.CTkFrame):
-  def __init__(self,master, title, text, alternatives, subtitle=None, *args, **kwargs):
+  def __init__(self,master, title, text, alternatives, subtitle=None, checkVars=None, *args, **kwargs):
+    """
+    Creates a pop up window with a title, text, and options to respond with.
+    
+    Parameters
+    ----------
+    master : CTkWidget
+      The widget that will be the parent of this popup window.
+    
+    title : str
+      The title of the popup window.
+    
+    text : str or list
+      The text to display in the popup window. If a list is given, it will be rendered as multiple lines.
+    
+    alternatives : list
+      A list of strings that will be rendered as buttons to select from.
+    
+    subtitle : str
+      A subtitle to display below the title.
+    
+    checkVars : dict
+      A dictionary where the keys are the text to display next to a checkbox and the value is the initial state of the checkbox.
+    
+    *args, **kwargs : arguments
+      Any additional arguments that will be passed to the CTkFrame constructor.
+    
+    Returns
+    -------
+    None
+    
+    Notes
+    -----
+    This function will block until the user selects an option and closes the window.
+    The selected option can be accessed with the `get` function of the returned object.
+    """
     super().__init__(master, *args, **kwargs)
     self.configure(corner_radius =0, fg_color="#282c34", bg_color="#282c34")
     self.place(relx=0.5, rely=0.5, anchor="center")
@@ -27,6 +62,20 @@ class SelectionPop(ctk.CTkFrame):
       self.multi_render()
     else:
       self.one_render()
+    
+    if checkVars != None:
+
+      self.checks = []
+      for index, key in enumerate(checkVars.keys()):
+        self.var = ctk.BooleanVar(master=self, value=checkVars[key])
+        self.element = ctk.CTkCheckBox(self, text=key, variable=self.var, onvalue=True, offvalue=False, height=5, checkbox_height=16, checkbox_width=16, corner_radius= 0)
+        self.element.pack(side="top", fill="x", padx=10, pady=(0,10))
+        self.checks.append({
+          "key": index,
+          "element": self.element,
+          "var": self.var
+        })
+    
     
     self.btn_frame = ctk.CTkFrame(self, corner_radius=0)
     self.btn_frame.pack(side="bottom", fill ="x", padx=0, pady=0)
@@ -69,7 +118,27 @@ class SelectionPop(ctk.CTkFrame):
       self.alternatives_entries.append(alternatives_entry)
   
   def get(self):
-    return self.response
+    """
+    Gets the response from the popup window. If the popup window had checkboxes, the response will include a "checks" key with a list of boolean values corresponding to the state of each checkbox. If the popup window did not have checkboxes, the response will only have an "alternatives" key with the selected option from the popup window.
+    
+    Returns
+    -------
+    dict
+      A dictionary with the response from the popup window.
+    """
+    res = self.response
+    res = {
+      "alternatives": self.response
+    }
+    checks = []
+    if hasattr(self, "checks"):
+      for check in self.checks:
+        if check["var"].get():
+          checks.append(True)
+        else:
+          checks.append(False)
+      res['checks'] = checks
+    return res
   
   def accept(self):
     if isinstance(self.text, list):
