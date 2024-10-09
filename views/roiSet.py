@@ -5,6 +5,7 @@ from datetime import datetime
 import threading
 import os
 import json
+from CTkToolTip import CTkToolTip
 
 from components.roiSetHeader import RoiSetHeader
 from components.roiSetRarImg import RoiSetRarImg
@@ -18,7 +19,7 @@ from controllers.roiSetController import get_by_id, edit_by_id
 from services.process import process
 from services.excel import *
 from services.logs import save_error
-from utils import get_name_from_path
+from utils import get_name_from_path, ellipsis_text
 from constants import IMG_TYPES, EXPORT_TYPES, RGB_VALUES, ONE_CHANNEL_VALUES, SOIL_MASK_TYPE
 
 class roiSet(ctk.CTkFrame):
@@ -74,8 +75,9 @@ class roiSet(ctk.CTkFrame):
     if self.select_soil['type'] == SOIL_MASK_TYPE[0]:
       self.points_txt = ctk.CTkLabel(self.footer, text=(f"{str(self.select_soil['value'][0])} {str(self.select_soil['value'][1])}" if self.select_soil['value'] != [None, None] else "No se ha seleccionado un area de suelo"))
     elif self.select_soil['type'] == SOIL_MASK_TYPE[1]:
-      self.points_txt = ctk.CTkLabel(self.footer, text=(f"{str(self.select_soil['value'])}" if self.select_soil != [None, None] else "No se ha seleccionado un area de suelo"))
+      self.points_txt = ctk.CTkLabel(self.footer, text=(f"{str(ellipsis_text(self.select_soil['value'], 50))}" if self.select_soil != "" else "No se ha seleccionado un area de suelo"))
     self.points_txt.pack(side="left", padx=5)
+    self.points_txt_tool = CTkToolTip(self.points_txt, message=self.select_soil['value'], bg_color = "#23272e")
     
     excel_logo = ctk.CTkImage(light_image=Image.open("assets/icons/excel.png"), dark_image=Image.open("assets/icons/excel.png"), size=(20, 20))
     self.generate_btn = ctk.CTkButton(self.footer, text="Generar", command=self.click_generate_xslx, fg_color="#175935", hover_color="#0f783f", width=100, image=excel_logo)
