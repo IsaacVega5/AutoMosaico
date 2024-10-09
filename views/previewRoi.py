@@ -35,20 +35,22 @@ class previewRoi(ctk.CTkToplevel):
     
     self.img = Mosaico(img_path, type)
     
-    self.soil_mask = None
-    to_draw = self.img.img
-    if soil != None and soil['type'] == SOIL_MASK_TYPE[0]:
-      if soil['value'] is not None and soil['value'][0] is not None and soil['value'][1] is not None:
-        to_draw, self.soil_mask= self.img.get_soilless_img(soil['value'])
-    elif soil != None and soil['type'] == SOIL_MASK_TYPE[1]:
-      if len(soil['value']) > 0 and os.path.exists(soil['value']):
-        to_draw, self.soil_mask = self.img.get_soilless_img(soil['value'])
-       
     #Calculamos el ratio antes de ajustar dimensiones
     if self.origin:
       self.ratio = 1
     else:
       self.ratio = self.img.resize_ratio(self.img_origin_roi)
+    
+    self.soil_mask = None
+    to_draw = self.img.img
+    if soil != None and soil['type'] == SOIL_MASK_TYPE[0]:
+      if soil['value'] is not None and soil['value'][0] is not None and soil['value'][1] is not None:
+        new_soil = [[ int(value * self.ratio) for value in values ] for values in soil['value']] # <- Ajustamos las coordenadas con el ratio
+        
+        to_draw, self.soil_mask= self.img.get_soilless_img(new_soil)
+    elif soil != None and soil['type'] == SOIL_MASK_TYPE[1]:
+      if len(soil['value']) > 0 and os.path.exists(soil['value']):
+        to_draw, self.soil_mask = self.img.get_soilless_img(soil['value'])
     
     # ajustar dimensiones
     self.img_height, self.img_width = get_resize_size(self.img, w_height)
