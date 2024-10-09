@@ -114,7 +114,7 @@ class Mosaico():
     x1, y1 = min(points[0][0], points[1][0]), min(points[0][1], points[1][1])
     x2, y2 = max(points[0][0], points[1][0]), max(points[0][1], points[1][1])
     
-    aerial_image = cv2.imread(img_path)
+    aerial_image = cv2.imdecode(np.fromfile(img_path, dtype=np.uint8), cv2.IMREAD_UNCHANGED) # <- utilizamos este método para evitar problemas con caracteres especiales
     img_matrix = np.array(aerial_image)
     soil_image = img_matrix[y1:y2, x1:x2]
 
