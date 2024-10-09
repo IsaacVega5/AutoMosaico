@@ -269,7 +269,9 @@ class roiSet(ctk.CTkFrame):
       return
       
     os.startfile(destiny_path)
-      
+  
+  def get_soil_data(self):
+    return self.select_soil
   
   def render_img_list(self):
     self.destroy_img()
@@ -283,7 +285,7 @@ class roiSet(ctk.CTkFrame):
     col = 0
     row = 0
     for i in range(len(self.img_list)):
-      self.img_selected = ImageSelected(master=self.images_frame, image_path=self.img_list[i]["path"], type=self.img_list[i]["type"], index=i)
+      self.img_selected = ImageSelected(master=self.images_frame, image_path=self.img_list[i]["path"], type=self.img_list[i]["type"], index=i, soil_data = self.get_soil_data)
       self.img_selected.grid(row=row, column=col, padx=5, pady=5)
       col += 1
       if col >= 3:

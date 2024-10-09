@@ -1,4 +1,5 @@
 import customtkinter as ctk
+import types
 from CTkToolTip import CTkToolTip
 from PIL import Image
 
@@ -10,7 +11,7 @@ from views.previewRoi import previewRoi
 from components.MessageBox import warning
 
 class ImageSelected(ctk.CTkFrame):
-  def __init__(self, image_path, type, index, *args, **kwargs):
+  def __init__(self, image_path, type, index, soil_data = None, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.configure(fg_color = "#23272e", corner_radius = 0)
     
@@ -18,7 +19,8 @@ class ImageSelected(ctk.CTkFrame):
     self.name = get_name_full_from_path(self.image_path)
     self.type = type
     self.index = index
-    
+    self.soil_data = soil_data
+
     cut_name = self.name if len(self.name) < 20 else self.name[:20] + "..."
     self.label_name = ctk.CTkLabel(self, text=cut_name, height=20)
     self.label_name.grid(row=0, column=0, columnspan=2, padx=(5,0), pady=5)
@@ -62,7 +64,8 @@ class ImageSelected(ctk.CTkFrame):
         img_path=self.image_path, 
         roi_path=self.master.master.master.master.master.roi, 
         type = self.type,
-        original_img_path = self.master.master.master.master.master.img)
+        original_img_path = self.master.master.master.master.master.img,
+        soil=self.soil_data())
 
     preview.after(250, preview.lift)
   
