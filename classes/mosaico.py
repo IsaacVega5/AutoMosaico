@@ -88,12 +88,23 @@ class Mosaico():
     return new_size[0] / original_size[0]
   
   def get_soilless_img(self, soil_points):
-    mask = self.generate_mask_from_tile(soil_points)
+    if isinstance(soil_points, str):
+      mask = Image.open(soil_points)
+      mask = np.array(mask)
+      mask = cv2.resize(mask, self.img.size)
+      mask = np.where(mask > 0, 1, 0)
+      
+    else:    
+      mask = self.generate_mask_from_tile(soil_points)
+      
+    if len(mask.shape) == 3:
+      mask = mask[:, :, 0]
+    
     image_array = np.array(self.img)
     masked_img = np.zeros(image_array.shape, dtype=np.uint8)
-    masked_img[:, :, 0] = image_array[:, :, 0] * mask[:, :, 0]
-    masked_img[:, :, 1] = image_array[:, :, 1] * mask[:, :, 0]
-    masked_img[:, :, 2] = image_array[:, :, 2] * mask[:, :, 0]
+    masked_img[:, :, 0] = image_array[:, :, 0] * mask
+    masked_img[:, :, 1] = image_array[:, :, 1] * mask
+    masked_img[:, :, 2] = image_array[:, :, 2] * mask
     self.soilless_img = Image.fromarray(masked_img)
     return self.soilless_img, mask
   

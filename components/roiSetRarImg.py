@@ -139,7 +139,7 @@ class RoiSetRarImg(ctk.CTkFrame):
       type = self.img_type, 
       origin = True, 
       original_img_path = self.img_path,
-      soil_points=self.master.master.master.master.select_soil)
+      soil=self.master.master.master.master.select_soil)
   
     preview.after(250, preview.lift)
     

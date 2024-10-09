@@ -8,9 +8,10 @@ import json
 from views.selectSoil import SelectSoil
 
 from components.imgOriginPreview import ImgOriginPreview
+from components.selectionPop import SelectionPop
 from services.jsonFiles import save_to_json
 
-from constants import ROI_SET_PATH, IMG_TYPES
+from constants import ROI_SET_PATH, IMG_TYPES, SOIL_MASK_TYPE
 
 
 class NewRoi(ctk.CTkFrame):
@@ -23,7 +24,10 @@ class NewRoi(ctk.CTkFrame):
     self.roi_path = None
     self.img_roi_path = None
     self.type = IMG_TYPES[0]
-    self.selected_soil = [None, None]
+    self.data_soil = {
+      "type": SOIL_MASK_TYPE[0],
+      "value": [None, None]
+    }
     
     self.frame = ctk.CTkFrame(self)
     self.frame.place(relx=0.5, rely=0.5, anchor="center")
@@ -66,15 +70,30 @@ class NewRoi(ctk.CTkFrame):
     self.save_btn.grid(row=8, column=0, columnspan=2, padx=10, pady=10, sticky="e")
     
   def select_soil(self):
-    selectSoil = SelectSoil(master=self, img_path=self.img_roi_path, select_soil=self.selected_soil)
-    selectSoil.after(250, selectSoil.lift)
-    self.wait_window(selectSoil)
-    if selectSoil.points is None: return
-    self.selected_soil = selectSoil.points
-    self.soil_entry.configure(state='normal')
-    self.soil_entry.delete(0, ctk.END)
-    self.soil_entry.insert(0, str(selectSoil.points[0]) + ", " + str(selectSoil.points[1]))
-    self.soil_entry.configure(state='disabled')
+    select_type = SelectionPop(self, title="Tipo de método", text="Seleccione el tipo de Método que desea usar", alternatives=SOIL_MASK_TYPE)
+    if not select_type.get(): return
+    res = select_type.get()['alternatives']
+    
+    if res == SOIL_MASK_TYPE[0]:
+      selectSoil = SelectSoil(master=self, img_path=self.img_roi_path, select_soil=self.data_soil["value"] if self.data_soil["type"] == SOIL_MASK_TYPE[0] else None)
+      selectSoil.after(250, selectSoil.lift)
+      self.wait_window(selectSoil)
+      if selectSoil.points is None: return
+      self.data_soil["value"] = selectSoil.points
+      self.data_soil["type"] = SOIL_MASK_TYPE[0]
+      self.soil_entry.configure(state='normal')
+      self.soil_entry.delete(0, ctk.END)
+      self.soil_entry.insert(0, str(selectSoil.points[0]) + ", " + str(selectSoil.points[1]))
+      self.soil_entry.configure(state='disabled')
+    elif res == SOIL_MASK_TYPE[1]:
+      path = tk.filedialog.askopenfilename(filetypes=(("Imágenes", "*.png;*.jpg;*.tif;*.tiff"),))
+      if path is None or path == "" : return
+      self.data_soil["value"] = path
+      self.data_soil["type"] = SOIL_MASK_TYPE[1]
+      self.soil_entry.configure(state='normal')
+      self.soil_entry.delete(0, ctk.END)
+      self.soil_entry.insert(0, str(path))
+      self.soil_entry.configure(state='disabled')
   
   def select_roi(self):
     file_path = tk.filedialog.askopenfilename(filetypes=(("Archivo zip", "*.zip"),))
@@ -129,7 +148,7 @@ class NewRoi(ctk.CTkFrame):
       "roi_path": self.roi_path,
       "image_path": self.img_roi_path,
       "image_type": self.type,
-      "soil_points": json.dumps(self.selected_soil),
+      "soil_data": json.dumps(self.data_soil),
       "updated_at": str(datetime.now().strftime("%d/%m/%Y %H:%M:%S")),
       "created_at": str(datetime.now().strftime("%d/%m/%Y %H:%M:%S")),
     }

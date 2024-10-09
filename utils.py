@@ -60,3 +60,8 @@ def get_new_size(image_size, new_size):
   new_width = int(o_ancho * resize_ratio)
   new_height = int(o_alto * resize_ratio)
   return new_width, new_height, resize_ratio
+
+def ellipsis_text(text, width):
+  if len(text) > width:
+    return text[:width - 3] + '...'
+  return text

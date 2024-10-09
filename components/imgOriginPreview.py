@@ -56,6 +56,5 @@ class ImgOriginPreview(ctk.CTkFrame):
       self.master.master.shake()
       return
     
-    soil_points = None if self.master.master.selected_soil[0] == None else self.master.master.selected_soil
-    preview_window = previewRoi(self.src, roi_path, type = self.type, origin = True, original_img_path = self.src, soil_points = soil_points)
+    preview_window = previewRoi(self.src, roi_path, type = self.type, origin = True, original_img_path = self.src, soil = self.master.master.data_soil)
     preview_window.after(250, preview_window.lift)

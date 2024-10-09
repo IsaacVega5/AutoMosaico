@@ -138,8 +138,8 @@ def process_img(img_args):
   
   values = []
   mask = None
-  if type == 'RGB' and soil is not None and soil[0] is not None:
-    _, mask = Mosaico(image['path'], type).get_soilless_img(soil)
+  if type == 'RGB' and soil['value'] is not None and soil['value'] != "" and soil['value'][0] is not None:
+    _, mask = Mosaico(image['path'], type).get_soilless_img(soil['value'])
    
   for name in roi_zip:
     roi = ROI(roi_zip[name])
@@ -179,7 +179,7 @@ def values_from_rgb_img(img, figure, soil_mask = None):
   for y in range(minY, maxY):
     for x in range(minX, maxX):
       if soil_mask is not None:
-        if soil_mask[y][x][0] == 0:
+        if soil_mask[y][x] == 0:
           continue
       r, g, b = img.getpixel((x, y))
       r *= INV_255

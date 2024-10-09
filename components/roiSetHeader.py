@@ -44,7 +44,7 @@ class RoiSetHeader(ctk.CTkFrame):
       "roi_path": self.master.roiSetRarImg.roi_path,
       "image_path": self.master.roiSetRarImg.img_path,
       "image_type": self.master.roiSetRarImg.img_type,
-      "soil_points": json.dumps(self.master.select_soil),
+      "soil_data": json.dumps(self.master.select_soil),
       "updated_at": str(datetime.now().strftime("%d/%m/%Y %H:%M:%S")),
       "created_at": data["created_at"],
     }

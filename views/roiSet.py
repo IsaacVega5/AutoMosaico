@@ -5,6 +5,7 @@ from datetime import datetime
 import threading
 import os
 import json
+from CTkToolTip import CTkToolTip
 
 from components.roiSetHeader import RoiSetHeader
 from components.roiSetRarImg import RoiSetRarImg
@@ -18,8 +19,8 @@ from controllers.roiSetController import get_by_id, edit_by_id
 from services.process import process
 from services.excel import *
 from services.logs import save_error
-from utils import get_name_from_path
-from constants import IMG_TYPES, EXPORT_TYPES, RGB_VALUES, ONE_CHANNEL_VALUES
+from utils import get_name_from_path, ellipsis_text
+from constants import IMG_TYPES, EXPORT_TYPES, RGB_VALUES, ONE_CHANNEL_VALUES, SOIL_MASK_TYPE
 
 class roiSet(ctk.CTkFrame):
   def __init__(self, id, *args, **kwargs):
@@ -36,7 +37,12 @@ class roiSet(ctk.CTkFrame):
     self.roi = data["roi_path"]
     self.type = data["image_type"]
     self.img_list = []
-    self.select_soil = json.loads(data["soil_points"]) if "soil_points" in data and data["soil_points"] != "" else [None, None]
+    self.select_soil = json.loads(data["soil_data"]) if "soil_data" in data and data["soil_data"] != "" else {"type" : SOIL_MASK_TYPE[0], "value" : [None, None]}
+    # #* Objeto select soil, value puede ser un array con coordenadas o un path
+    # self.select_soil = {
+    #   "type" : SOIL_MASK_TYPE[0],
+    #   "value" : self.select_soil
+    # }
     
     self.header = RoiSetHeader(master=self, id=data['id'])
     
@@ -66,8 +72,12 @@ class roiSet(ctk.CTkFrame):
     self.get_soil_area_btn = ctk.CTkButton(self.footer, text="Suelo", fg_color="#404754", hover_color="#5d677a", width=100, command=self.get_soil_area)
     self.get_soil_area_btn.pack(side="left")
     
-    self.points_txt = ctk.CTkLabel(self.footer, text=(f"{str(self.select_soil[0])} {str(self.select_soil[1])}" if self.select_soil != [None, None] else "No se ha seleccionado un area de suelo"))
+    if self.select_soil['type'] == SOIL_MASK_TYPE[0]:
+      self.points_txt = ctk.CTkLabel(self.footer, text=(f"{str(self.select_soil['value'][0])} {str(self.select_soil['value'][1])}" if self.select_soil['value'] != [None, None] else "No se ha seleccionado un area de suelo"))
+    elif self.select_soil['type'] == SOIL_MASK_TYPE[1]:
+      self.points_txt = ctk.CTkLabel(self.footer, text=(f"{str(ellipsis_text(self.select_soil['value'], 50))}" if self.select_soil != "" else "No se ha seleccionado un area de suelo"))
     self.points_txt.pack(side="left", padx=5)
+    self.points_txt_tool = CTkToolTip(self.points_txt, message=self.select_soil['value'], bg_color = "#23272e")
     
     excel_logo = ctk.CTkImage(light_image=Image.open("assets/icons/excel.png"), dark_image=Image.open("assets/icons/excel.png"), size=(20, 20))
     self.generate_btn = ctk.CTkButton(self.footer, text="Generar", command=self.click_generate_xslx, fg_color="#175935", hover_color="#0f783f", width=100, image=excel_logo)
@@ -79,14 +89,31 @@ class roiSet(ctk.CTkFrame):
     return self.img
   
   def get_soil_area(self):
-    selectSoil = SelectSoil(master=self, img_path=self.img, select_soil=self.select_soil)
-    selectSoil.after(250, selectSoil.lift)
+    type_soil = SelectionPop(master=self, title="Tipo de mascara", text="Seleccione el tipo de mascara que desea usar",
+                             alternatives=SOIL_MASK_TYPE)
     
-    self.wait_window(selectSoil)
-    points = selectSoil.points
-    if points is None: return
-    self.select_soil = points
-    self.points_txt.configure(text=(f"{str(points[0])} {str(points[1])}" if self.select_soil != [None, None] else "No se ha seleccionado un area de suelo"))
+    if type_soil.get() is False: return
+    if type_soil.get()['alternatives'] == SOIL_MASK_TYPE[0]:  
+      soil_points = self.select_soil['value'] if self.select_soil['type'] == SOIL_MASK_TYPE[0] else [None, None]
+      
+      selectSoil = SelectSoil(master=self, img_path=self.img, select_soil=soil_points)
+      selectSoil.after(250, selectSoil.lift)
+      
+      self.wait_window(selectSoil)
+      points = selectSoil.points
+      if points is None: return
+      self.select_soil = {
+        "type" : SOIL_MASK_TYPE[0],
+        "value" : points
+      }
+      self.points_txt.configure(text=(f"{str(points[0])} {str(points[1])}" if points != [None, None] else "No se ha seleccionado un area de suelo"))
+    elif type_soil.get()['alternatives'] == SOIL_MASK_TYPE[1]:
+      path = tk.filedialog.askopenfilename(filetypes=(("Imágenes", "*.png;*.jpg;*.tif;*.tiff"),))
+      self.select_soil = {
+        "type" : SOIL_MASK_TYPE[1],
+        "value" : path
+      }
+      self.points_txt.configure(text=(f"{str(path)}" if path != "" else "No se ha seleccionado un area de suelo"))
     
   def clear_img(self):
     alert = warning(title="Eliminar imágenes", message="¿Seguro/a que desea eliminar todas las imágenes?", option_1="Eliminar", option_2="Cancelar")

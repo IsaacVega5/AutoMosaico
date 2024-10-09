@@ -16,3 +16,5 @@ EXPORT_TYPES = ["Individual", "Conjunto"]
 
 RGB_VALUES = ['Intensity', 'Hue', 'Saturation', 'Lightness', '*a', '*b', '*u', '*v', 'GA%', 'GGA%', 'CSI']
 ONE_CHANNEL_VALUES = ['Area', 'Mean', 'Min', 'Max']
+
+SOIL_MASK_TYPE =  ["Hue del suelo", "Mascara externa"]

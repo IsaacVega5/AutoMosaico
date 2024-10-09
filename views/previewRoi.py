@@ -12,13 +12,14 @@ from components.previewTools import previewTools
 from classes.mosaico import Mosaico
 from classes.roi import ROI
 
+from constants import SOIL_MASK_TYPE
 from utils import get_resize_size, resize_ratio, order_roi_zip
 from services.process import values_from_rgb_img, gen_masked_img, values_from_tif_img, get_max_hue
 
 w_height, w_width = 1000, 1000
 
 class previewRoi(ctk.CTkToplevel):
-  def __init__(self, img_path, roi_path, type = 'RGB', origin = False, original_img_path = None, soil_points = None, *args, **kwargs) -> None:
+  def __init__(self, img_path, roi_path, type = 'RGB', origin = False, original_img_path = None, soil = None, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
     self.after(250, lambda: self.iconbitmap('assets/map.ico'))
     self.roi_path = roi_path
@@ -27,7 +28,7 @@ class previewRoi(ctk.CTkToplevel):
     self.original_img_path = original_img_path
     self.selected_roi = None
     self.img_path = img_path
-    self.soil_points = soil_points
+    self.soil = soil
     
     self.img_origin_roi = Image.open(self.original_img_path)
     self.title(f'ROI Preview - {type} - {img_path}')
@@ -36,8 +37,12 @@ class previewRoi(ctk.CTkToplevel):
     
     self.soil_mask = None
     to_draw = self.img.img
-    if soil_points is not None and soil_points[0] is not None and soil_points[1] is not None:
-      to_draw, self.soil_mask= self.img.get_soilless_img(soil_points)
+    if soil['type'] == SOIL_MASK_TYPE[0]:
+      if soil['value'] is not None and soil['value'][0] is not None and soil['value'][1] is not None:
+        to_draw, self.soil_mask= self.img.get_soilless_img(soil['value'])
+    elif soil['type'] == SOIL_MASK_TYPE[1]:
+      if len(soil['value']) > 0 and os.path.exists(soil['value']):
+        to_draw, self.soil_mask = self.img.get_soilless_img(soil['value'])
        
     #Calculamos el ratio antes de ajustar dimensiones
     if self.origin:
@@ -141,7 +146,9 @@ class previewRoi(ctk.CTkToplevel):
       mask = None
       if self.soil_mask is not None and self.tools.get_remove_soil():
         mask = self.soil_mask
-      values = [round(value, 4) if isinstance(value, float) else value for value in values_from_rgb_img(img, figure, mask)]
+      try:
+        values = [round(value, 4) if isinstance(value, float) else value for value in values_from_rgb_img(img, figure, mask)]
+      except Exception as e: print(e)
       self.table.delete_row(1)
       self.table.add_row([row, roi.get_name(), *values])
     
