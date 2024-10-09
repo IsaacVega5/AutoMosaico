@@ -1,5 +1,4 @@
 import customtkinter as ctk
-import types
 from CTkToolTip import CTkToolTip
 from PIL import Image
 
