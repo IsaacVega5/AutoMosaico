@@ -37,10 +37,10 @@ class previewRoi(ctk.CTkToplevel):
     
     self.soil_mask = None
     to_draw = self.img.img
-    if soil['type'] == SOIL_MASK_TYPE[0]:
+    if soil != None and soil['type'] == SOIL_MASK_TYPE[0]:
       if soil['value'] is not None and soil['value'][0] is not None and soil['value'][1] is not None:
         to_draw, self.soil_mask= self.img.get_soilless_img(soil['value'])
-    elif soil['type'] == SOIL_MASK_TYPE[1]:
+    elif soil != None and soil['type'] == SOIL_MASK_TYPE[1]:
       if len(soil['value']) > 0 and os.path.exists(soil['value']):
         to_draw, self.soil_mask = self.img.get_soilless_img(soil['value'])
        
