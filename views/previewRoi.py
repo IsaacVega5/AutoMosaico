@@ -176,7 +176,8 @@ class previewRoi(ctk.CTkToplevel):
     save_path = asksaveasfilename(
       initialdir = os.path.dirname(img_path),
       title = "Select file",
-      filetypes = (("jpg files","*.jpg"),("all files","*.*"))
+      filetypes = (("jpg files","*.jpg"),("all files","*.*")),
+      defaultextension = ".jpg"
     )
     if self.tools.get_remove_soil(): 
       img = self.img.soilless_img
