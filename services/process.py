@@ -138,7 +138,8 @@ def process_img(img_args):
   
   values = []
   mask = None
-  if type == 'RGB' and soil['value'] is not None and soil['value'] != "" and soil['value'][0] is not None:
+  
+  if type == 'RGB' and soil is not None and soil['value'] is not None and soil['value'] != "" and soil['value'][0] is not None:
     new_soil = [[ int(value * ratio) for value in values ] for values in soil['value']]
     _, mask = Mosaico(image['path'], type).get_soilless_img(new_soil)
    
