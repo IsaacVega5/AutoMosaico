@@ -115,6 +115,12 @@ class roiSet(ctk.CTkFrame):
       }
       self.points_txt.configure(text=(f"{str(ellipsis_text(path, 50))}" if self.select_soil != "" else "No se ha seleccionado un area de suelo"))
       self.points_txt_tool = CTkToolTip(self.points_txt, message=path, bg_color = "#23272e")
+    elif type_soil.get()['alternatives'] == SOIL_MASK_TYPE[2]:
+      self.select_soil = {
+        "type" : SOIL_MASK_TYPE[2],
+        "value" : None
+      }
+      self.points_txt.configure(text=SOIL_MASK_TYPE[2])
     
   def clear_img(self):
     alert = warning(title="Eliminar imágenes", message="¿Seguro/a que desea eliminar todas las imágenes?", option_1="Eliminar", option_2="Cancelar")

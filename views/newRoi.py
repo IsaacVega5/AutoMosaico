@@ -94,6 +94,12 @@ class NewRoi(ctk.CTkFrame):
       self.soil_entry.delete(0, ctk.END)
       self.soil_entry.insert(0, str(path))
       self.soil_entry.configure(state='disabled')
+    elif res == SOIL_MASK_TYPE[2]:
+      self.data_soil["value"] = None
+      self.data_soil["type"] = SOIL_MASK_TYPE[2]
+      self.soil_entry.configure(state='normal')
+      self.soil_entry.delete(0, ctk.END)
+      self.soil_entry.configure(state='disabled')
   
   def select_roi(self):
     file_path = tk.filedialog.askopenfilename(filetypes=(("Archivo zip", "*.zip"),))
