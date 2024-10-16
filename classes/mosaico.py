@@ -116,7 +116,7 @@ class Mosaico():
     
     aerial_image = cv2.imdecode(np.fromfile(img_path, dtype=np.uint8), cv2.IMREAD_UNCHANGED) # <- utilizamos este método para evitar problemas con caracteres especiales
     img_matrix = np.array(aerial_image)
-    soil_image = img_matrix[y1:y2, x1:x2]
+    soil_image = img_matrix[int(y1):int(y2), int(x1):int(x2)] # <- este es el problema, no se puede leer la imagen si no se le indica el formato RGB, por eso se hace un reshape y se le indica que es RGBA, para que el procesamiento de la imagen sea correcto. Por ejemplo: img_matrix[y1:y2, x1:x2]
 
     soil_image_tiled = np.tile(soil_image, (aerial_image.shape[0] // soil_image.shape[0] + 1, aerial_image.shape[1] // soil_image.shape[1] + 1, 1))
     soil_image_tiled = soil_image_tiled[:aerial_image.shape[0], :aerial_image.shape[1], :]

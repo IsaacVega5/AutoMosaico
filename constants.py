@@ -4,12 +4,11 @@ IMG_TYPES_FILES = (("All Image Files", "*.jpg;*.png;*.tif"), ("JPG files", "*.jp
 
 ROI_SET_PATH = "json/roiSets.json"
 
-R_DIFF = 0.47
 INV_255 = 1 / 255.0
-MIN_H_GA = 60 * R_DIFF
-MAX_H  = 180 * R_DIFF
+MIN_H_GA = 60
+MAX_H  = 180
 MIN_SAT = 1
-MIN_H_GGA = 80 * R_DIFF
+MIN_H_GGA = 80
 
 ORDER_BY = ["Búsqueda", "ABC asc", "ABC desc", "Creación asc", "Creación desc", "Edición asc", "Edición desc"]
 
