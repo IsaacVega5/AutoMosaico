@@ -140,7 +140,9 @@ def process_img(img_args):
   values = []
   mask = None
   
-  if soil['type'] == SOIL_MASK_TYPE[0] and soil['value'] != [None, None]:
+  if soil is None:
+    pass
+  elif soil['type'] == SOIL_MASK_TYPE[0] and soil['value'] != [None, None]:
     new_soil = [[ int(value) * ratio for value in values ] for values in soil['value']]
     _, mask = Mosaico(image['path'], type).get_soilless_img(new_soil)
   elif soil['type'] == SOIL_MASK_TYPE[1] and os.path.exists(soil['value']):
