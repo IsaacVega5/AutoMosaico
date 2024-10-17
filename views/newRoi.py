@@ -99,6 +99,7 @@ class NewRoi(ctk.CTkFrame):
       self.data_soil["type"] = SOIL_MASK_TYPE[2]
       self.soil_entry.configure(state='normal')
       self.soil_entry.delete(0, ctk.END)
+      self.soil_entry.insert(0, SOIL_MASK_TYPE[2])
       self.soil_entry.configure(state='disabled')
   
   def select_roi(self):
