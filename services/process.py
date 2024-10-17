@@ -6,6 +6,7 @@ from colormath.color_objects import XYZColor, sRGBColor
 from colormath.color_conversions import convert_color
 import multiprocessing
 from concurrent.futures import ThreadPoolExecutor
+import os
 
 from classes.mosaico import Mosaico
 from classes.roi import ROI
@@ -139,12 +140,15 @@ def process_img(img_args):
   values = []
   mask = None
   
-  if type == 'RGB' and soil is not None and soil['value'] is not None and soil['value'] != "" and soil['value'][0] is not None:
-    new_soil = soil['value']
-    if isinstance(soil['value'], list):
-      new_soil = [[ int(value) * ratio for value in values ] for values in soil['value']]
+  if soil['type'] == SOIL_MASK_TYPE[0] and soil['value'] != [None, None]:
+    new_soil = [[ int(value) * ratio for value in values ] for values in soil['value']]
     _, mask = Mosaico(image['path'], type).get_soilless_img(new_soil)
-   
+  elif soil['type'] == SOIL_MASK_TYPE[1] and os.path.exists(soil['value']):
+    _, mask = Mosaico(image['path'], type).get_soilless_img(soil['value'])
+  elif soil['type'] == SOIL_MASK_TYPE[2]:
+    _, mask = Mosaico(image['path'], type).get_soilless_img()
+  
+  
   for name in roi_zip:
     roi = ROI(roi_zip[name])
     try:
