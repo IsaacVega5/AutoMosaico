@@ -7,6 +7,7 @@ import numpy as np
 from read_roi import read_roi_zip
 import os
 
+from components.MessageBox import check
 from components.previewTools import previewTools
 
 from classes.mosaico import Mosaico
@@ -187,3 +188,7 @@ class previewRoi(ctk.CTkToplevel):
     else:
       img = self.img.img
     img.save(save_path)
+    msg = check(title="Exito", message=f"La imagen se guardó correctamente en:\n{save_path}", option_1 = "Aceptar", option_2 = "Abrir")
+    if msg.get() == "Abrir":
+      os.startfile(save_path)
+    
