@@ -87,8 +87,17 @@ class Mosaico():
     
     return new_size[0] / original_size[0]
   
-  def get_soilless_img(self, soil_points):
-    if isinstance(soil_points, str):
+  def get_soilless_img(self, soil_points = None):
+    
+    if soil_points is None:
+      #* Aplicamos el Overall Hue Index en la imagen según la formula de FieldMaskR
+      image_array = np.array(self.img)
+      overall_hue_index = lambda r,g,b : math.atan(2*(b-g-r) / 30.5 * (g-r))
+      r,g,b = image_array[:,:,0], image_array[:,:,1], image_array[:,:,2]
+      overall_hue_index_matrix = np.vectorize(overall_hue_index)(r,g,b)
+      mask = np.where(overall_hue_index_matrix < 0, 1, 0)
+      
+    elif isinstance(soil_points, str):
       mask = Image.open(soil_points)
       mask = np.array(mask)
       mask = cv2.resize(mask, self.img.size)

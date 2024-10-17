@@ -76,6 +76,8 @@ class roiSet(ctk.CTkFrame):
       self.points_txt = ctk.CTkLabel(self.footer, text=(f"{str(self.select_soil['value'][0])} {str(self.select_soil['value'][1])}" if self.select_soil['value'] != [None, None] else "No se ha seleccionado un area de suelo"))
     elif self.select_soil['type'] == SOIL_MASK_TYPE[1]:
       self.points_txt = ctk.CTkLabel(self.footer, text=(f"{str(ellipsis_text(self.select_soil['value'], 50))}" if self.select_soil != "" else "No se ha seleccionado un area de suelo"))
+    elif self.select_soil['type'] == SOIL_MASK_TYPE[2]:
+      self.points_txt = ctk.CTkLabel(self.footer, text=(f"Hue general" ))
     self.points_txt.pack(side="left", padx=5)
     self.points_txt_tool = CTkToolTip(self.points_txt, message=self.select_soil['value'], bg_color = "#23272e")
     
