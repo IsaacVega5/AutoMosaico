@@ -15,7 +15,7 @@ executables = [
 ]
 
 setup(name='AutoMosaico',
-      version = '0.3.1',
+      version = '0.3.2',
       author='Isaac vega Salgado',
       author_email='isaacvega361@gmail.com',
       description = 'AutoMosaico',
