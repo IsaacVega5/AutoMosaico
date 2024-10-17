@@ -80,7 +80,7 @@ class roiSet(ctk.CTkFrame):
     
     save_icon = ctk.CTkImage(Image.open("assets/icons/save.png"), size=(15, 15))
     self.save_soil_mask = ctk.CTkButton(self.footer, text="", image=save_icon, fg_color="#404754", hover_color="#5d677a", width=20, corner_radius=5,
-                                        background_corner_colors =("#404754", "#282c34", "#282c34", "#404754"), command=self.save_soil_mask)
+                                        background_corner_colors =("#404754", "#282c34", "#282c34", "#404754"), command= threading.Thread(target=self.save_soil_mask).start)
     self.save_soil_mask.bind("<Enter>", lambda _: self.save_soil_mask.configure(background_corner_colors=("#5d677a", "#282c34", "#282c34", "#5d677a"), fg_color="#5d677a"))
     self.save_soil_mask.bind("<Leave>", lambda _: self.save_soil_mask.configure(background_corner_colors=("#404754", "#282c34", "#282c34", "#404754"), fg_color="#404754"))
     self.save_soil_mask.pack(side="left", padx=0)
