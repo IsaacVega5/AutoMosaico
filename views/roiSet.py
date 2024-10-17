@@ -1,11 +1,13 @@
 import tkinter as tk
 import customtkinter as ctk
-from PIL import Image, ImageTk
+from PIL import Image
 from datetime import datetime
 import threading
 import os
 import json
 from CTkToolTip import CTkToolTip
+
+from classes.mosaico import Mosaico
 
 from components.roiSetHeader import RoiSetHeader
 from components.roiSetRarImg import RoiSetRarImg
@@ -78,7 +80,7 @@ class roiSet(ctk.CTkFrame):
     
     save_icon = ctk.CTkImage(Image.open("assets/icons/save.png"), size=(15, 15))
     self.save_soil_mask = ctk.CTkButton(self.footer, text="", image=save_icon, fg_color="#404754", hover_color="#5d677a", width=20, corner_radius=5,
-                                        background_corner_colors =("#404754", "#282c34", "#282c34", "#404754"))
+                                        background_corner_colors =("#404754", "#282c34", "#282c34", "#404754"), command=self.save_soil_mask)
     self.save_soil_mask.bind("<Enter>", lambda _: self.save_soil_mask.configure(background_corner_colors=("#5d677a", "#282c34", "#282c34", "#5d677a"), fg_color="#5d677a"))
     self.save_soil_mask.bind("<Leave>", lambda _: self.save_soil_mask.configure(background_corner_colors=("#404754", "#282c34", "#282c34", "#404754"), fg_color="#404754"))
     self.save_soil_mask.pack(side="left", padx=0)
@@ -101,6 +103,32 @@ class roiSet(ctk.CTkFrame):
     return self.roi
   def get_img(self):
     return self.img
+  
+  def save_soil_mask(self):
+    img = Mosaico(self.img, self.type)
+    if self.select_soil['type'] == SOIL_MASK_TYPE[2] or  self.select_soil['value'] != [None, None] or os.path.exists(str(self.select_soil['value'])):
+      path = tk.filedialog.asksaveasfilename(filetypes=(("JPG", "*.jpg"),("PNG", "*.png"), ("TIF", "*.tif")), defaultextension=".jpg")
+      if path == "" or path is None: return
+      ext = os.path.splitext(path)[1]
+    else : return
+    
+    if self.select_soil['type'] == SOIL_MASK_TYPE[0] and self.select_soil['value'] != [None, None]:
+      _, mask = img.get_soilless_img(soil_points=self.select_soil['value'])
+    elif self.select_soil['type'] == SOIL_MASK_TYPE[1] and os.path.exists(self.select_soil['value']):
+      _, mask = img.get_soilless_img(soil_points=self.select_soil['value'])
+    elif self.select_soil['type'] == SOIL_MASK_TYPE[2]:
+      _, mask = img.get_soilless_img()
+    else: return
+    mask = mask * 255
+    
+    if ext != "tif":
+      mask = Image.fromarray(mask).convert("RGB")
+    else:
+      mask = Image.fromarray(mask)
+    mask.save(path)
+    msg = check(title="Exito", message=f"Se ha guardado la máscara de suelo en:\n{path}", option_1 = "Aceptar", option_2 = "Abrir")
+    if msg.get() == "Abrir":
+      os.startfile(path) 
   
   def get_soil_area(self):
     type_soil = SelectionPop(master=self, title="Tipo de mascara", text="Seleccione el tipo de mascara que desea usar",
