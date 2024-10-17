@@ -51,6 +51,9 @@ class previewRoi(ctk.CTkToplevel):
     elif soil != None and soil['type'] == SOIL_MASK_TYPE[1]:
       if len(soil['value']) > 0 and os.path.exists(soil['value']):
         to_draw, self.soil_mask = self.img.get_soilless_img(soil['value'])
+    elif soil['type'] == SOIL_MASK_TYPE[2]:
+      to_draw, self.soil_mask = self.img.get_soilless_img(soil['value'])
+      
     
     # ajustar dimensiones
     self.img_height, self.img_width = get_resize_size(self.img, w_height)

@@ -7,6 +7,8 @@ import os
 import json
 from CTkToolTip import CTkToolTip
 
+from classes.mosaico import Mosaico
+
 from components.roiSetHeader import RoiSetHeader
 from components.roiSetRarImg import RoiSetRarImg
 from components.imageSelected import ImageSelected
@@ -69,13 +71,27 @@ class roiSet(ctk.CTkFrame):
     self.footer = ctk.CTkFrame(self)
     self.footer.pack(side="bottom", padx=(10,5), pady=5, fill="both")
     
-    self.get_soil_area_btn = ctk.CTkButton(self.footer, text="Suelo", fg_color="#404754", hover_color="#5d677a", width=100, command=self.get_soil_area)
-    self.get_soil_area_btn.pack(side="left")
+    self.get_soil_area_btn = ctk.CTkButton(self.footer, text="Suelo", fg_color="#404754", bg_color="#404754", hover_color="#5d677a", width=70, command=self.get_soil_area, corner_radius=5,
+                                           background_corner_colors =("#282c34", "#404754", "#404754", "#282c34"))
+    self.get_soil_area_btn.bind("<Enter>", lambda _: self.get_soil_area_btn.configure(background_corner_colors=("#282c34", "#5d677a", "#5d677a", "#282c34"), fg_color="#5d677a"))
+    self.get_soil_area_btn.bind("<Leave>", lambda _: self.get_soil_area_btn.configure(background_corner_colors=("#282c34", "#404754", "#404754", "#282c34"), fg_color="#404754"))
+    self.get_soil_area_btn.pack(side="left", padx=0)
+    self.get_soil_area_tool = CTkToolTip(self.get_soil_area_btn, message="Seleccionar suelo", bg_color = "#23272e")
+    
+    save_icon = ctk.CTkImage(Image.open("assets/icons/save.png"), size=(15, 15))
+    self.save_soil_mask = ctk.CTkButton(self.footer, text="", image=save_icon, fg_color="#404754", hover_color="#5d677a", width=20, corner_radius=5,
+                                        background_corner_colors =("#404754", "#282c34", "#282c34", "#404754"), command= threading.Thread(target=self.save_soil_mask).start)
+    self.save_soil_mask.bind("<Enter>", lambda _: self.save_soil_mask.configure(background_corner_colors=("#5d677a", "#282c34", "#282c34", "#5d677a"), fg_color="#5d677a"))
+    self.save_soil_mask.bind("<Leave>", lambda _: self.save_soil_mask.configure(background_corner_colors=("#404754", "#282c34", "#282c34", "#404754"), fg_color="#404754"))
+    self.save_soil_mask.pack(side="left", padx=0)
+    self.save_soil_mask_tool = CTkToolTip(self.save_soil_mask, message="Guardar máscara de suelo", bg_color = "#23272e")
     
     if self.select_soil['type'] == SOIL_MASK_TYPE[0]:
       self.points_txt = ctk.CTkLabel(self.footer, text=(f"{str(self.select_soil['value'][0])} {str(self.select_soil['value'][1])}" if self.select_soil['value'] != [None, None] else "No se ha seleccionado un area de suelo"))
     elif self.select_soil['type'] == SOIL_MASK_TYPE[1]:
       self.points_txt = ctk.CTkLabel(self.footer, text=(f"{str(ellipsis_text(self.select_soil['value'], 50))}" if self.select_soil != "" else "No se ha seleccionado un area de suelo"))
+    elif self.select_soil['type'] == SOIL_MASK_TYPE[2]:
+      self.points_txt = ctk.CTkLabel(self.footer, text=(f"Hue general" ))
     self.points_txt.pack(side="left", padx=5)
     self.points_txt_tool = CTkToolTip(self.points_txt, message=self.select_soil['value'], bg_color = "#23272e")
     
@@ -87,6 +103,32 @@ class roiSet(ctk.CTkFrame):
     return self.roi
   def get_img(self):
     return self.img
+  
+  def save_soil_mask(self):
+    img = Mosaico(self.img, self.type)
+    if self.select_soil['type'] == SOIL_MASK_TYPE[2] or  self.select_soil['value'] != [None, None] or os.path.exists(str(self.select_soil['value'])):
+      path = tk.filedialog.asksaveasfilename(filetypes=(("JPG", "*.jpg"),("PNG", "*.png"), ("TIF", "*.tif")), defaultextension=".jpg")
+      if path == "" or path is None: return
+      ext = os.path.splitext(path)[1]
+    else : return
+    
+    if self.select_soil['type'] == SOIL_MASK_TYPE[0] and self.select_soil['value'] != [None, None]:
+      _, mask = img.get_soilless_img(soil_points=self.select_soil['value'])
+    elif self.select_soil['type'] == SOIL_MASK_TYPE[1] and os.path.exists(self.select_soil['value']):
+      _, mask = img.get_soilless_img(soil_points=self.select_soil['value'])
+    elif self.select_soil['type'] == SOIL_MASK_TYPE[2]:
+      _, mask = img.get_soilless_img()
+    else: return
+    mask = mask * 255
+    
+    if ext != "tif":
+      mask = Image.fromarray(mask).convert("RGB")
+    else:
+      mask = Image.fromarray(mask)
+    mask.save(path)
+    msg = check(title="Exito", message=f"Se ha guardado la máscara de suelo en:\n{path}", option_1 = "Aceptar", option_2 = "Abrir")
+    if msg.get() == "Abrir":
+      os.startfile(path) 
   
   def get_soil_area(self):
     type_soil = SelectionPop(master=self, title="Tipo de mascara", text="Seleccione el tipo de mascara que desea usar",
@@ -115,6 +157,12 @@ class roiSet(ctk.CTkFrame):
       }
       self.points_txt.configure(text=(f"{str(ellipsis_text(path, 50))}" if self.select_soil != "" else "No se ha seleccionado un area de suelo"))
       self.points_txt_tool = CTkToolTip(self.points_txt, message=path, bg_color = "#23272e")
+    elif type_soil.get()['alternatives'] == SOIL_MASK_TYPE[2]:
+      self.select_soil = {
+        "type" : SOIL_MASK_TYPE[2],
+        "value" : None
+      }
+      self.points_txt.configure(text=SOIL_MASK_TYPE[2])
     
   def clear_img(self):
     alert = warning(title="Eliminar imágenes", message="¿Seguro/a que desea eliminar todas las imágenes?", option_1="Eliminar", option_2="Cancelar")
