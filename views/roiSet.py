@@ -69,7 +69,7 @@ class roiSet(ctk.CTkFrame):
     self.footer = ctk.CTkFrame(self)
     self.footer.pack(side="bottom", padx=(10,5), pady=5, fill="both")
     
-    self.get_soil_area_btn = ctk.CTkButton(self.footer, text="Suelo", fg_color="#404754", bg_color="#404754", width=70, command=self.get_soil_area, corner_radius=5,
+    self.get_soil_area_btn = ctk.CTkButton(self.footer, text="Suelo", fg_color="#404754", bg_color="#404754", hover_color="#5d677a", width=70, command=self.get_soil_area, corner_radius=5,
                                            background_corner_colors =("#282c34", "#404754", "#404754", "#282c34"))
     self.get_soil_area_btn.bind("<Enter>", lambda _: self.get_soil_area_btn.configure(background_corner_colors=("#282c34", "#5d677a", "#5d677a", "#282c34"), fg_color="#5d677a"))
     self.get_soil_area_btn.bind("<Leave>", lambda _: self.get_soil_area_btn.configure(background_corner_colors=("#282c34", "#404754", "#404754", "#282c34"), fg_color="#404754"))
@@ -77,7 +77,7 @@ class roiSet(ctk.CTkFrame):
     self.get_soil_area_tool = CTkToolTip(self.get_soil_area_btn, message="Seleccionar suelo", bg_color = "#23272e")
     
     save_icon = ctk.CTkImage(Image.open("assets/icons/save.png"), size=(15, 15))
-    self.save_soil_mask = ctk.CTkButton(self.footer, text="", image=save_icon, fg_color="#404754", width=20, corner_radius=5,
+    self.save_soil_mask = ctk.CTkButton(self.footer, text="", image=save_icon, fg_color="#404754", hover_color="#5d677a", width=20, corner_radius=5,
                                         background_corner_colors =("#404754", "#282c34", "#282c34", "#404754"))
     self.save_soil_mask.bind("<Enter>", lambda _: self.save_soil_mask.configure(background_corner_colors=("#5d677a", "#282c34", "#282c34", "#5d677a"), fg_color="#5d677a"))
     self.save_soil_mask.bind("<Leave>", lambda _: self.save_soil_mask.configure(background_corner_colors=("#404754", "#282c34", "#282c34", "#404754"), fg_color="#404754"))
