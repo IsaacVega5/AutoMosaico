@@ -1,6 +1,6 @@
 import customtkinter as ctk
 import tkinter as tk
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageDraw
 import utils as ut
 import math 
 from components.MessageBox import warning
@@ -33,15 +33,16 @@ class SelectSoil(ctk.CTkToplevel):
     self.img_canvas = ctk.CTkCanvas(self, width=new_width, height=new_height)
     self.img_canvas.configure(highlightthickness=0)
     self.img_canvas.pack(side="left")
-    # self.img_canvas.pack(fill="both", expand=True)
     
     self.img_preview_canvas = ctk.CTkCanvas(self, width=new_height, height=new_height)
+    self.img_preview_canvas.configure(highlightthickness=0)
     self.img_preview_canvas.pack(side="right")
     self.img_preview_canvas.create_polygon(0, 0, 50, 50, fill='red', outline='red')
     
     self.img_canvas.create_image(0, 0, anchor=tk.NW, image=self.img)
     self.img_canvas.bind("<Button-1>", self.get_point)
     self.img_canvas.bind("<Button-3>", self.update_last_point)
+    self.img_canvas.bind("<Motion>", self.update_zoom)
     
     self.update()
     self.geometry(f"{new_width + new_height}x{new_height + self.top_bar.winfo_height()}")
@@ -50,6 +51,49 @@ class SelectSoil(ctk.CTkToplevel):
     self.draw_points()
     self.set_preview()
     
+  def update_zoom(self, event):
+    x = event.x
+    y = event.y
+
+    resized_x = math.floor(x / self.resize_ratio)
+    resized_y = math.floor(y / self.resize_ratio)
+    
+    # Calcula la región de la imagen que se debe zoom
+    img = Image.open(self.img_path)
+    left = resized_x - 50
+    top = resized_y - 50
+    right = resized_x + 50
+    bottom = resized_y + 50
+
+    # Dibuja los puntos en la imagen
+    draw = ImageDraw.Draw(img, mode="RGBA")
+    
+    points = self.points
+    if points[0] is not None and points[1] is not None:
+      minx, miny = min(points[0][0], points[1][0]), min(points[0][1], points[1][1])
+      maxx, maxy = max(points[0][0], points[1][0]), max(points[0][1], points[1][1])
+      draw.rectangle([(minx, miny), (maxx, maxy)], fill=(255, 0, 0, 50), outline='red')
+    
+    for index, punto in enumerate(self.points):
+      if punto is not None:
+        if index == 0:
+          draw.ellipse([(punto[0]-6, punto[1]-6), (punto[0]+6, punto[1]+6)], outline='red')
+          draw.ellipse([(punto[0]-2, punto[1]-2), (punto[0]+2, punto[1]+2)], fill='red')
+        if index == 1:
+          draw.ellipse([(punto[0]-2, punto[1]-2), (punto[0]+2, punto[1]+2)], fill='red')
+
+    # Crea una imagen de zoom
+    zoom_img = img.crop((left, top, right, bottom))
+    zoom_img = zoom_img.resize((100, 100))
+
+    # Convierte la imagen a un formato que pueda ser utilizado por Tkinter
+    zoom_img = ImageTk.PhotoImage(zoom_img)
+
+    # Dibuja la imagen de zoom en el canvas
+    self.img_canvas.delete("zoom_img")
+    self.img_canvas.create_image(x, y, image=zoom_img, tag="zoom_img")
+    self.img_canvas.image = zoom_img 
+
   def on_close(self):
     msg = warning(title="Advertencia", message="¿Seguro/a que desea cerrar sin guardar los cambios?", option_1 = "Continuar", option_2 = "Cancelar")
     if msg.get() == "Cancelar":
@@ -82,6 +126,7 @@ class SelectSoil(ctk.CTkToplevel):
     
     self.draw_points()
     self.set_preview()
+    self.update_zoom(event=event)
   
   def update_last_point(self, event):
     x = math.floor(event.x / self.resize_ratio)
@@ -90,6 +135,7 @@ class SelectSoil(ctk.CTkToplevel):
 
     self.draw_points()
     self.set_preview()
+    self.update_zoom(event=event)
   
   def draw_points(self):
     self.img_canvas.delete("all")
