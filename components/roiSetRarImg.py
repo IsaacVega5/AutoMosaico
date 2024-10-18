@@ -7,7 +7,7 @@ from read_roi import read_roi_zip
 
 from views.previewRoi import previewRoi
 from classes.mosaico import Mosaico
-from utils import get_resize_size, get_name_full_from_path
+from utils import get_resize_size, get_name_full_from_path, ellipsis_text, get_new_size
 
 from constants import IMG_TYPES
 
@@ -35,13 +35,14 @@ class RoiSetRarImg(ctk.CTkFrame):
     self.edit_img_button.grid(row=0, column=1, padx=(1,5), pady=(0,2))
     
     self.img = Mosaico(self.img_path, self.img_type)
-    img_height, img_width = get_resize_size(self.img, 210)
+    self.preview_img_size = (210, 75)
+    img_width, img_height, _ = get_new_size(self.img.size(), self.preview_img_size)
     
     self.image = ctk.CTkImage(light_image=self.img.img,
                               dark_image=self.img.img,
                               size=(img_width, img_height))
     
-    self.label = ctk.CTkLabel(self.img_frame, image=self.image, text="")
+    self.label = ctk.CTkLabel(self.img_frame, image=self.image, text="", bg_color="#23272e", width=self.preview_img_size[0], height=self.preview_img_size[1])
     self.label.grid(row=1, column=0, padx=5, pady=2, columnspan=2)
     
     self.name_tooltip = CTkToolTip(self.path_img_entry, message = self.img_path, bg_color = "#23272e", corner_radius = 0)
@@ -73,16 +74,17 @@ class RoiSetRarImg(ctk.CTkFrame):
     roi = read_roi_zip(self.roi_path)
     values = [['Nombre', 'Vertices X', 'Vertices Y']]
     for name in list(roi)[:3]:
-      values.append([name, roi[name]['x'], roi[name]['y']])
-    
-    self.table = CTkTable(master=self.table_frame, column=3, row=4, values=values, width=10, colors=["#282c34", "#282c34"], hover_color='#404754', header_color="#23272e", padx=0, pady=0)
+      values.append([name, ellipsis_text(str(roi[name]['x']).replace("[", "").replace("]", ""), 20), 
+                     ellipsis_text(str(roi[name]['y']).replace("[", "").replace("]", ""), 20)])
+      
+    self.table = CTkTable(master=self.table_frame, column=3, row=4, values=values, width=10, colors=["#282c34", "#282c34"], hover_color='#404754', header_color="#23272e", padx=0, pady=0, font=("Roboto", 11))
     self.table.grid(row=1, column=0, padx=0, pady=5, columnspan=2)
     self.table_tooltip = CTkToolTip(self.table, message = table_name, bg_color = "#23272e", corner_radius = 0)
   
   def change_type(self, value):
     self.img_type = value
     self.img = Mosaico(self.img_path, value)
-    img_height, img_width = get_resize_size(self.img, 210)
+    img_width, img_height, _ = get_new_size(self.img.size(), self.preview_img_size)
     self.image = ctk.CTkImage(light_image=self.img.img,
                               dark_image=self.img.img,
                               size=(img_width, img_height))
@@ -126,7 +128,8 @@ class RoiSetRarImg(ctk.CTkFrame):
     roi = read_roi_zip(self.roi_path)
     values = [['Nombre', 'Vertices X', 'Vertices Y']]
     for name in list(roi)[:3]:
-      values.append([name, roi[name]['x'], roi[name]['y']])
+      values.append([name, ellipsis_text(str(roi[name]['x']).replace("[", "").replace("]", ""), 20), 
+                     ellipsis_text(str(roi[name]['y']).replace("[", "").replace("]", ""), 20)])
     self.table.update_values(values)
     
     self.roi_path_tooltip.configure(message = self.roi_path)

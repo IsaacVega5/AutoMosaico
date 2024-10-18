@@ -2,7 +2,7 @@ import customtkinter as ctk
 from CTkToolTip import CTkToolTip
 from PIL import Image
 
-from utils import get_name_full_from_path
+from utils import get_name_full_from_path, get_new_size
 from classes.mosaico import Mosaico
 from constants import IMG_TYPES
 
@@ -26,11 +26,13 @@ class ImageSelected(ctk.CTkFrame):
     self.label_name_tooltip = CTkToolTip(self.label_name, message = self.name, bg_color = "#23272e", corner_radius = 0)
     
     self.image = Mosaico(self.image_path, self.type)
+    self.image_size = (150,100)
+    width, height, _ = get_new_size(self.image.size(), self.image_size)
     self.image = ctk.CTkImage(light_image=self.image.img,
                               dark_image=self.image.img,
-                              size=(150, 100))
+                              size=(width, height))
     
-    self.label_img = ctk.CTkLabel(self, image=self.image, text="")
+    self.label_img = ctk.CTkLabel(self, image=self.image, text="", fg_color="#000000", height=self.image_size[1], width=self.image_size[0])
     self.label_img.grid(row=1, column=0,columnspan=2, padx=(0,2), pady=1)
     self.label_img_tooltip = CTkToolTip(self.label_img, message = self.image_path, bg_color = "#23272e", corner_radius = 0)
     
@@ -51,9 +53,10 @@ class ImageSelected(ctk.CTkFrame):
     self.type = value
     
     self.image = Mosaico(self.image_path, self.type)
+    width, height, _ = get_new_size(self.image.size(), self.image_size)
     self.image = ctk.CTkImage(light_image=self.image.img,
                               dark_image=self.image.img,
-                              size=(150, 100))
+                              size=(width, height))
     self.label_img.configure(image=self.image)
     
     self.master.master.master.master.master.change_img_type_by_index(self.index, self.type)

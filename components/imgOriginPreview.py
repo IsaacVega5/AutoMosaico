@@ -21,9 +21,9 @@ class ImgOriginPreview(ctk.CTkFrame):
     self.frame_height = 180
     self.src = src
     self.img = Mosaico(src, self.type)
-    img_height, img_width, _ = ut.get_new_size((self.img.img.size[1], self.img.img.size[0]), (self.frame_width, self.frame_height))
+    img_width, img_height, _ = ut.get_new_size(self.img.size(), (self.frame_width, self.frame_height))
     self.image = ctk.CTkImage(light_image=self.img.img, dark_image=self.img.img, size=(img_width, img_height))
-    self.label = ctk.CTkLabel(self, text="", image=self.image)
+    self.label = ctk.CTkLabel(self, text="", image=self.image, fg_color="#000000", width=self.frame_width, height=self.frame_height)
     
     self.label.pack(fill="both", expand=True, padx=0, pady=(0,4))
     
