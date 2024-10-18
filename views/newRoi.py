@@ -70,7 +70,12 @@ class NewRoi(ctk.CTkFrame):
     self.save_btn.grid(row=8, column=0, columnspan=2, padx=10, pady=10, sticky="e")
     
   def select_soil(self):
-    select_type = SelectionPop(self, title="Tipo de método", text="Seleccione el tipo de Método que desea usar", alternatives=SOIL_MASK_TYPE)
+    alternatives = []
+    for i in range(len(SOIL_MASK_TYPE)):
+      if i == 0 and self.type != "RGB": continue
+      if i == 2 and self.type != "RGB": continue
+      alternatives.append(SOIL_MASK_TYPE[i])
+    select_type = SelectionPop(self, title="Tipo de método", text="Seleccione el tipo de Método que desea usar", alternatives=alternatives)
     if not select_type.get(): return
     res = select_type.get()['alternatives']
     

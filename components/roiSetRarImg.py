@@ -89,6 +89,7 @@ class RoiSetRarImg(ctk.CTkFrame):
                               dark_image=self.img.img,
                               size=(img_width, img_height))
     self.label.configure(image=self.image)
+    self.master.master.master.master.type = value
     
   def edit_img(self):
     file_path = tk.filedialog.askopenfilename(filetypes=(("Imágenes", "*.png;*.jpg;*.tif;*.tiff"),))

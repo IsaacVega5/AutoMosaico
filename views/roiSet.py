@@ -40,11 +40,6 @@ class roiSet(ctk.CTkFrame):
     self.type = data["image_type"]
     self.img_list = []
     self.select_soil = json.loads(data["soil_data"]) if "soil_data" in data and data["soil_data"] != "" else {"type" : SOIL_MASK_TYPE[0], "value" : [None, None]}
-    # #* Objeto select soil, value puede ser un array con coordenadas o un path
-    # self.select_soil = {
-    #   "type" : SOIL_MASK_TYPE[0],
-    #   "value" : self.select_soil
-    # }
     
     self.header = RoiSetHeader(master=self, id=data['id'])
     
@@ -131,8 +126,13 @@ class roiSet(ctk.CTkFrame):
       os.startfile(path) 
   
   def get_soil_area(self):
+    alternatives = []
+    for i in range(len(SOIL_MASK_TYPE)):
+      if i == 0 and self.type != "RGB": continue
+      if i == 2 and self.type != "RGB": continue
+      alternatives.append(SOIL_MASK_TYPE[i])
     type_soil = SelectionPop(master=self, title="Tipo de mascara", text="Seleccione el tipo de mascara que desea usar",
-                             alternatives=SOIL_MASK_TYPE)
+                             alternatives=alternatives)
     
     if type_soil.get() is False: return
     if type_soil.get()['alternatives'] == SOIL_MASK_TYPE[0]:  
