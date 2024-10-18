@@ -6,6 +6,7 @@ from components.MessageBox import warning
 
 from controllers.roiSetController import get_by_id, delete_by_id
 from classes.mosaico import Mosaico
+from utils import get_new_size
 
 class LastRoiSet(ctk.CTkFrame):
   def __init__(self, id,  *args, **kwargs):
@@ -25,12 +26,14 @@ class LastRoiSet(ctk.CTkFrame):
     self.btn_frame = ctk.CTkFrame(self, fg_color="#23272e", width=30, height=30)
     self.btn_frame.pack(side="right", padx=0, pady=0, fill="y")
     
+    self.label_size = (150, 100)
     self.image = Mosaico(self.data["image_path"], self.data["image_type"])
+    width, height, _ = get_new_size(self.image.size(), self.label_size)
     self.image = ctk.CTkImage(light_image=self.image.img,
                               dark_image=self.image.img,
-                              size=(150, 100))
-    self.label_img = ctk.CTkButton(self.image_frame, image=self.image, text="", bg_color="#23272e", fg_color="#23272e", hover_color="#23272e", command=self.on_click)
-    self.label_img.pack()
+                              size=(width, height))
+    self.label_img = ctk.CTkButton(self.image_frame, image=self.image, text="", bg_color="#23272e", fg_color="#23272e", hover_color="#23272e", command=self.on_click, width=self.label_size[0], height=self.label_size[1], corner_radius=0)
+    self.label_img.pack(padx=0, pady=0, ipadx=0, ipady=0)
     
     self.cut_name = self.data["name"][:45] + "..." if len(self.data["name"]) > 45 else self.data["name"]
     self.name_label = ctk.CTkButton(self.data_frame, text=self.cut_name, font=("Arial", 13, "bold"), command=self.on_click, fg_color="#23272e", hover_color="#23272e", anchor="w")
