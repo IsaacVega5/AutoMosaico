@@ -9,7 +9,8 @@ class NavBar(ctk.CTkFrame):
     self.configure(
       fg_color = "#23272e",
       bg_color = "#1e2227",
-      width= 50
+      width= 50,
+      corner_radius = 0
     )
     
     logo_img = Image.open("assets/logo.png")
