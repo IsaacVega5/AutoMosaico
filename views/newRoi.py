@@ -60,7 +60,7 @@ class NewRoi(ctk.CTkFrame):
     self.img_btn = ctk.CTkButton(self.frame, text="Seleccionar", command=self.select_img, fg_color="#1a7ecf", hover_color="#209bff", width=60)
     self.img_btn.grid(row=4, column=1, padx=(2, 10), pady=0)
     
-    self.soil_label = ctk.CTkLabel(self.frame, text="Seleccione un area de suelo de la imagen")
+    self.soil_label = ctk.CTkLabel(self.frame, text="Seleccione el método que desea usar para remover el suelo", compound="left")
     self.soil_entry = ctk.CTkEntry(self.frame, placeholder_text="No se ha seleccionado un area de suelo", width=250)
     self.soil_entry.configure(state='disabled')
     
@@ -132,7 +132,7 @@ class NewRoi(ctk.CTkFrame):
     self.img_roi_path = file_path
     
     # Mostrar opciones de suelo
-    self.soil_label.grid(row=6, column=0, padx=(10, 2), pady=(5,0), sticky="w")
+    self.soil_label.grid(row=6, column=0, padx=(10, 2), pady=(5,0), sticky="w", columnspan=2)
     self.soil_entry.grid(row=7, column=0, padx=(10, 2), pady=0)
     self.soil_btn.grid(row=7, column=1, padx=(2, 10), pady=0)
     
