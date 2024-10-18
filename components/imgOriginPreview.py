@@ -43,7 +43,7 @@ class ImgOriginPreview(ctk.CTkFrame):
   def change_type(self, value):
     self.type = value
     self.img = Mosaico(self.src, self.type)
-    img_height, img_width, _ = ut.get_new_size((self.img.img.size[1], self.img.img.size[0]), (self.frame_width, self.frame_height))
+    img_width, img_height, _ = ut.get_new_size(self.img.size(), (self.frame_width, self.frame_height))
     self.image = ctk.CTkImage(light_image=self.img.img, dark_image=self.img.img, size=(img_width, img_height))
     self.label.configure(image=self.image)
     self.master.master.type = value
