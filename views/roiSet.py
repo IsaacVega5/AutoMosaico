@@ -74,12 +74,13 @@ class roiSet(ctk.CTkFrame):
     self.get_soil_area_tool = CTkToolTip(self.get_soil_area_btn, message="Seleccionar suelo", bg_color = "#23272e")
     
     save_icon = ctk.CTkImage(Image.open("assets/icons/save.png"), size=(15, 15))
-    self.save_soil_mask = ctk.CTkButton(self.footer, text="", image=save_icon, fg_color="#404754", hover_color="#5d677a", width=20, corner_radius=5,
-                                        background_corner_colors =("#404754", "#282c34", "#282c34", "#404754"), command= threading.Thread(target=self.save_soil_mask).start)
-    self.save_soil_mask.bind("<Enter>", lambda _: self.save_soil_mask.configure(background_corner_colors=("#5d677a", "#282c34", "#282c34", "#5d677a"), fg_color="#5d677a"))
-    self.save_soil_mask.bind("<Leave>", lambda _: self.save_soil_mask.configure(background_corner_colors=("#404754", "#282c34", "#282c34", "#404754"), fg_color="#404754"))
-    self.save_soil_mask.pack(side="left", padx=0)
-    self.save_soil_mask_tool = CTkToolTip(self.save_soil_mask, message="Guardar máscara de suelo", bg_color = "#23272e")
+    self.save_soil_mask_thread = None
+    self.btn_save_soil_mask = ctk.CTkButton(self.footer, text="", image=save_icon, fg_color="#404754", hover_color="#5d677a", width=20, corner_radius=5,
+                                        background_corner_colors =("#404754", "#282c34", "#282c34", "#404754"), command=self.run_save_soil_mask)
+    self.btn_save_soil_mask.bind("<Enter>", lambda _: self.btn_save_soil_mask.configure(background_corner_colors=("#5d677a", "#282c34", "#282c34", "#5d677a"), fg_color="#5d677a"))
+    self.btn_save_soil_mask.bind("<Leave>", lambda _: self.btn_save_soil_mask.configure(background_corner_colors=("#404754", "#282c34", "#282c34", "#404754"), fg_color="#404754"))
+    self.btn_save_soil_mask.pack(side="left", padx=0)
+    self.save_soil_mask_tool = CTkToolTip(self.btn_save_soil_mask, message="Guardar máscara de suelo", bg_color = "#23272e")
     
     if self.select_soil['type'] == SOIL_MASK_TYPE[0]:
       self.points_txt = ctk.CTkLabel(self.footer, text=(f"{str(self.select_soil['value'][0])} {str(self.select_soil['value'][1])}" if self.select_soil['value'] != [None, None] else "No se ha seleccionado un area de suelo"))
@@ -99,6 +100,12 @@ class roiSet(ctk.CTkFrame):
   def get_img(self):
     return self.img
   
+  def run_save_soil_mask(self):
+    if self.save_soil_mask_thread is not None and self.save_soil_mask_thread.is_alive():
+      self.save_soil_mask_thread.join()
+    self.save_soil_mask_thread = threading.Thread(target=self.save_soil_mask)
+    self.save_soil_mask_thread.start()
+    
   def save_soil_mask(self):
     img = Mosaico(self.img, self.type)
     if self.select_soil['type'] == SOIL_MASK_TYPE[2] or  self.select_soil['value'] != [None, None] or os.path.exists(str(self.select_soil['value'])):

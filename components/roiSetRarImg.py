@@ -104,7 +104,7 @@ class RoiSetRarImg(ctk.CTkFrame):
     self.path_img_entry.configure(state="readonly")
     
     self.img = Mosaico(self.img_path, self.img_type)
-    img_height, img_width = get_resize_size(self.img, 210)
+    img_width, img_height, _ = get_new_size(self.img.size(), self.preview_img_size)
     self.image = ctk.CTkImage(light_image=self.img.img,
                               dark_image=self.img.img,
                               size=(img_width, img_height))
