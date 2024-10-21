@@ -137,7 +137,7 @@ class Mosaico():
     
     diff = cv2.absdiff(hsv_aereal, hsv_tiled)
 
-    umbral = 1 if np.mean(diff) < 20 else 10
+    umbral = 10 if np.mean(diff) < 20 else 10
 
     mask = np.where(diff < umbral, 0, 1).astype(np.uint8)
     
