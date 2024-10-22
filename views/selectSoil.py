@@ -13,7 +13,7 @@ class SelectSoil(ctk.CTkToplevel):
     self.configure(fg_color="#23272e", corner_radius=0)
     
     self.img_path = img_path
-    self.points = select_soil
+    self.points = select_soil if select_soil is not None else [None, None]
     self.image = Image.open(img_path)
     new_width, new_height, self.resize_ratio = ut.get_new_size(self.image.size,(800, 800))
     self.new_height = new_height
