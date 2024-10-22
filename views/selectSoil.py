@@ -14,8 +14,8 @@ class SelectSoil(ctk.CTkToplevel):
     
     self.img_path = img_path
     self.points = select_soil
-    image = Image.open(img_path)
-    new_width, new_height, self.resize_ratio = ut.get_new_size(image.size,(800, 800))
+    self.image = Image.open(img_path)
+    new_width, new_height, self.resize_ratio = ut.get_new_size(self.image.size,(800, 800))
     self.new_height = new_height
     
     self.top_bar = ctk.CTkFrame(self, fg_color="#23272e", corner_radius=0)
@@ -28,9 +28,9 @@ class SelectSoil(ctk.CTkToplevel):
     self.save_btn = ctk.CTkButton(self.top_bar, text="Guardar", image=save_img, command=self.save, width=100)
     self.save_btn.pack(side="right", padx=5, pady=5)
     
-    self.img = ImageTk.PhotoImage(image.resize((new_width, new_height)))
+    self.img = ImageTk.PhotoImage(self.image.resize((new_width, new_height)))
     
-    self.img_canvas = ctk.CTkCanvas(self, width=new_width, height=new_height)
+    self.img_canvas = ctk.CTkCanvas(self, width=new_width, height=new_height, cursor="target")
     self.img_canvas.configure(highlightthickness=0)
     self.img_canvas.pack(side="left")
     
@@ -59,7 +59,7 @@ class SelectSoil(ctk.CTkToplevel):
     resized_y = math.floor(y / self.resize_ratio)
     
     # Calcula la región de la imagen que se debe zoom
-    img = Image.open(self.img_path)
+    img = self.image.copy()
     left = resized_x - 50
     top = resized_y - 50
     right = resized_x + 50
