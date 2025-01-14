@@ -31,6 +31,7 @@ class previewRoi(ctk.CTkToplevel):
     self.selected_roi = None
     self.img_path = img_path
     self.soil = soil
+    self.scale = 1
     
     self.img_origin_roi = Image.open(self.original_img_path)
     self.title(f'ROI Preview - {type} - {img_path}')
@@ -101,6 +102,26 @@ class previewRoi(ctk.CTkToplevel):
     window_width = self.img_width if self.img_width > min_width else min_width
     self.geometry(f"{window_width}x{self.img_height + 50 + 25}")
     self.resizable(False, False)
+    self.canvas.bind("<MouseWheel>", self.on_scroll)
+    self.canvas.bind("<B1-Motion>", self.on_move)
+  
+  def on_scroll(self, e : tk.EventType.MouseWheel):
+    self.scale += e.delta / 120
+    s_width, s_height = self.img_width * self.scale, self.img_height * self.scale
+    if s_width <= 0 or s_height <= 0:
+      return
+    print(s_width, s_height)
+    self.img_tk = ImageTk.PhotoImage(self.img.img.resize((int(s_width), int(s_height))))
+    self.canvas.delete('all')
+    self.canvas.create_image(0, 0, anchor="nw", image=self.img_tk)
+    
+    
+    self.draw_roi(self.tools.get_roi() )
+  
+  def on_move(self, e : tk.EventType.Motion):
+    print(e)
+    self.canvas.scan_mark(e.x, e.y)
+    self.canvas.scan_dragto(e.x, e.y, gain=1)
   
   def draw_roi(self, value = None):
     self.canvas.delete('all')
