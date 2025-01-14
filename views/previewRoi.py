@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter.filedialog import asksaveasfilename
 from CTkTable import CTkTable
 from PIL import  Image, ImageTk
+import cv2
 import numpy as np
 from read_roi import read_roi_zip
 import os
@@ -14,10 +15,10 @@ from classes.mosaico import Mosaico
 from classes.roi import ROI
 
 from constants import SOIL_MASK_TYPE
-from utils import get_resize_size, resize_ratio, order_roi_zip
+from utils import get_new_size, get_resize_size, resize_ratio, order_roi_zip
 from services.process import values_from_rgb_img, gen_masked_img, values_from_tif_img, get_max_hue
 
-w_height, w_width = 1000, 1000
+w_height, w_width = 1500, 1500
 
 class previewRoi(ctk.CTkToplevel):
   def __init__(self, img_path, roi_path, type = 'RGB', origin = False, original_img_path = None, soil = None, *args, **kwargs) -> None:
@@ -54,10 +55,13 @@ class previewRoi(ctk.CTkToplevel):
         to_draw, self.soil_mask = self.img.get_soilless_img(soil['value'])
     elif soil['type'] == SOIL_MASK_TYPE[2]:
       to_draw, self.soil_mask = self.img.get_soilless_img(soil['value'])
-      
+  
+    max_width = self.winfo_screenwidth() * 0.8
+    max_height = self.winfo_screenheight() * 0.8
     
     # ajustar dimensiones
-    self.img_height, self.img_width = get_resize_size(self.img, w_height)
+    height, width, _ = get_new_size(self.img.size(), (max_height, max_width))
+    self.img_height, self.img_width = get_resize_size(self.img, height)
     
     to_draw = to_draw.resize((self.img_width, self.img_height))
     self.img_tk = ImageTk.PhotoImage(to_draw)
@@ -93,7 +97,9 @@ class previewRoi(ctk.CTkToplevel):
     self.roi = order_roi_zip(self.roi)
     # self.draw_image()
     self.draw_roi(self.tools.get_roi())
-    self.geometry(f"{self.img_width}x{self.img_height + 50 + 25}")
+    min_width = 800 if self.type == 'RGB' else 400
+    window_width = self.img_width if self.img_width > min_width else min_width
+    self.geometry(f"{window_width}x{self.img_height + 50 + 25}")
     self.resizable(False, False)
   
   def draw_roi(self, value = None):
@@ -156,15 +162,19 @@ class previewRoi(ctk.CTkToplevel):
         values = [round(value, 4) if isinstance(value, float) else value for value in values_from_rgb_img(img, figure, mask)]
       except Exception as e: print(e)
       self.table.delete_row(1)
-      self.table.add_row([row, roi.get_name(), *values])
+      self.table.add_row([row, roi.get_name()] + [f'{value:.4f}' if isinstance(value, (int, float)) else value for value in values])
     
     else :
       img = np.array(img) # <-- Convertimos la imagen en un matriz
-      masked_img, mask = gen_masked_img(img, roi, ratio)
+      _, mask = gen_masked_img(img, roi, ratio)
+      if self.soil_mask is not None and self.tools.get_remove_soil():
+        soil_mask = np.where(self.soil_mask > 0, 1, 0)
+        mask = np.where(mask > 0, 1, 0)
+        mask = cv2.bitwise_and(mask, soil_mask)
       
       area, mean, max, min = values_from_tif_img(img, mask)
       self.table.delete_row(1)
-      self.table.add_row([row, roi.get_name(), area, mean, min, max])
+      self.table.add_row([row, roi.get_name(), area, f'{mean:.4f}', f'{min:.4f}', f'{max:.4f}'])
   
   def update_img(self):
     if self.tools.get_remove_soil(): 

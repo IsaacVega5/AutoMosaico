@@ -16,6 +16,7 @@ from utils import get_name_from_path, resize_ratio, order_roi_zip, get_min_and_m
 
 from components.MessageBox import error
 
+import traceback
 
 def gen_masked_img(img, roi, ratio):
   mask = np.zeros_like(img)
@@ -156,15 +157,20 @@ def process_img(img_args):
     try:
       if type == 'Termal' or type == 'OCN' or type == 'RGN':
           img = np.array(img)
-          _, mask = gen_masked_img(img, roi, ratio)
+          _, roi_mask = gen_masked_img(img, roi, ratio)
+          if mask is not None:
+            mask = np.where(mask > 0, 1, 0)
+            roi_mask = np.where(roi_mask > 0, 1, 0)
+            roi_mask = cv2.bitwise_and(mask, roi_mask)
           
-          area, mean, max, min = values_from_tif_img(img, mask)
+          area, mean, max, min = values_from_tif_img(img, roi_mask)
           values.append([roi.get_name(), area, mean, min, max])
       else:
           figure = roi.get_figure(ratio)
           values.append([roi.get_name(), *values_from_rgb_img(img, figure, mask)])
-    except Exception as e:
+    except Exception:
       values = False
+      print(traceback.format_exc())
     
   result = {
       'index': index,
